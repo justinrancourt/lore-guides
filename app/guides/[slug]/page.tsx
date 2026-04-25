@@ -41,7 +41,7 @@ export default async function AuthorGuidePage({ params }: PageProps) {
           placeCount={places.length}
         />
         <GuidePlacesView city={guide.title} places={places} />
-        <div className="px-5 pb-4 pt-6 text-center">
+        <div className="flex items-center justify-center gap-3 px-5 pb-4 pt-6">
           <Link
             href={`/guides/${guide.slug}/add`}
             className="inline-block border border-dashed border-border-bold px-4 py-2.5 font-serif text-[12px] uppercase text-ink-muted"
@@ -49,6 +49,15 @@ export default async function AuthorGuidePage({ params }: PageProps) {
           >
             + Add a place
           </Link>
+          {places.length > 1 && (
+            <Link
+              href={`/guides/${guide.slug}/reorder`}
+              className="inline-block px-3 py-2.5 font-serif text-[12px] uppercase text-faint"
+              style={{ letterSpacing: "0.14em" }}
+            >
+              Reorder
+            </Link>
+          )}
         </div>
         <GuideFooter authorName={profile.display_name} city={guide.title} />
         <CaptureFab />

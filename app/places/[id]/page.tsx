@@ -79,6 +79,7 @@ export default async function PlaceDetailPage({ params }: PageProps) {
         )}
         {cover && (
           <PhotoBlock
+            src={cover.url}
             color={placeholderColor(place.id)}
             caption={cover.caption ?? undefined}
           />

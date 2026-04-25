@@ -74,6 +74,7 @@ export function PlaceRow({ place, index }: PlaceRowProps) {
               )}
               {cover && (
                 <PhotoBlock
+                  src={cover.url}
                   color={placeholderColor(place.id)}
                   caption={cover.caption ?? undefined}
                 />

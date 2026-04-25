@@ -11,6 +11,7 @@ import { BorderlessInput } from "@/components/primitives/BorderlessInput";
 import { NoteTextarea } from "@/components/primitives/NoteTextarea";
 import { ChipSelect } from "@/components/primitives/ChipSelect";
 import { Toggle } from "@/components/primitives/Toggle";
+import { PhotoStripEditor } from "@/components/place/PhotoStripEditor";
 
 interface EditPlaceFormProps {
   place: PlaceWithGuidesAndPhotos;
@@ -102,6 +103,17 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
               name="address"
               defaultValue={place.address ?? ""}
             />
+          </Field>
+
+          <Field label="Photos">
+            <PhotoStripEditor
+              placeId={place.id}
+              userId={place.created_by}
+              photos={place.photos}
+            />
+            <p className="m-0 mt-2 font-serif italic text-[12px] text-faint">
+              The first photo is the cover. Tap another to promote it.
+            </p>
           </Field>
 
           <Field label="Vibe — one line">
