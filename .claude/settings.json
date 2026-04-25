@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__atlassian__getJiraIssue",
+      "mcp__atlassian__getAccessibleAtlassianResources",
+      "mcp__atlassian__getVisibleJiraProjects",
+      "mcp__linear__list_issues",
+      "mcp__linear__get_issue",
+      "mcp__linear__list_comments",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__vercel__list_projects"
+    ]
+  }
+}

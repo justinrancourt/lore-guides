@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    height: 100%;
+  }
+
+  body {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: theme("colors.bg");
+    color: theme("colors.ink");
+    font-family: theme("fontFamily.serif");
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@layer utilities {
+  /* Photo block warm-light overlay — repeated everywhere photos appear */
+  .photo-overlay {
+    background: linear-gradient(
+      135deg,
+      rgba(250, 245, 235, 0.12),
+      transparent 45%,
+      rgba(60, 40, 20, 0.16)
+    );
+  }
+
+  /* Hide horizontal scrollbars on chip rows while keeping scroll */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
