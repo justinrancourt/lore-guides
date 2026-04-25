@@ -5,7 +5,7 @@ import { BEST_TIMES, PLACE_TYPES, type BestTime, type PlaceType } from "@/lib/ty
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { ChipSelect } from "@/components/primitives/ChipSelect";
 import { NoteTextarea } from "@/components/primitives/NoteTextarea";
-import { Toggle } from "@/components/primitives/Toggle";
+import { TimeSensitiveField } from "@/components/primitives/TimeSensitiveField";
 import { Waymark } from "@/components/primitives/Waymark";
 import { searchPlaces, type SearchResult } from "@/lib/places-search";
 import { addPlaceToGuide, type SavePlaceFormState } from "@/lib/actions/places";
@@ -112,7 +112,6 @@ function AnnotateStep({
 }) {
   const [bestTime, setBestTime] = useState<BestTime | null>(null);
   const [type, setType] = useState<PlaceType | null>(null);
-  const [tsEnabled, setTsEnabled] = useState(false);
   const [name, setName] = useState(picked?.name ?? "");
 
   const [state, action, pending] = useActionState<SavePlaceFormState, FormData>(
@@ -139,11 +138,6 @@ function AnnotateStep({
       )}
       {bestTime && <input type="hidden" name="best_time" value={bestTime} />}
       {type && <input type="hidden" name="type" value={type} />}
-      <input
-        type="hidden"
-        name="time_sensitive_enabled"
-        value={tsEnabled ? "true" : "false"}
-      />
 
       {picked ? (
         <>
@@ -178,7 +172,7 @@ function AnnotateStep({
             />
           </Field>
         )}
-        <Field label="Best time">
+        <Field label="Best time of day">
           <ChipSelect value={bestTime} onChange={setBestTime} options={BEST_TIMES} />
         </Field>
         <Field label="Type">
@@ -198,24 +192,8 @@ function AnnotateStep({
             placeholder="What did you eat, see, feel?"
           />
         </Field>
-        <div className="flex flex-col gap-2 border-y border-border py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <p className="m-0 font-serif text-[14px] text-ink">Time-sensitive</p>
-              <p className="m-0 mt-0.5 font-serif italic text-[12px] text-faint">
-                Best at a specific time, day, or window
-              </p>
-            </div>
-            <Toggle enabled={tsEnabled} onChange={setTsEnabled} label="Time-sensitive" />
-          </div>
-          {tsEnabled && (
-            <input
-              type="text"
-              name="time_sensitive"
-              placeholder="Best before 9am"
-              className="block w-full border-0 border-b border-border bg-transparent px-0 py-1.5 font-serif text-[14px] text-ink outline-none focus:border-ink"
-            />
-          )}
+        <div className="border-t border-border pt-4">
+          <TimeSensitiveField name="time_sensitive" />
         </div>
       </div>
 

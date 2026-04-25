@@ -12,6 +12,10 @@ export interface PhotoWithUrl extends PlacePhotoRow {
 
 export interface PlaceWithGuides extends PlaceRow {
   guide_ids: string[];
+  // Cover image URL if the place has at least one photo. Cheap to populate
+  // because we already fetch photo rows alongside the place; sign just the
+  // first one to keep list rendering fast.
+  cover_url: string | null;
 }
 
 export interface PlaceWithGuidesAndPhotos extends PlaceWithGuides {
@@ -46,14 +50,44 @@ export async function listPlacesForUser(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("places")
-    .select("*, guide_places(guide_id)")
+    .select("*, guide_places(guide_id), place_photos(storage_path, sort_order)")
     .eq("created_by", userId)
     .eq("is_draft", false)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []).map(({ guide_places, ...p }) => ({
-    ...p,
-    guide_ids: (guide_places ?? []).map((gp) => gp.guide_id),
+
+  // Collect cover storage paths and batch-sign in one round trip. Each
+  // place gets at most one signed URL (the cover); other photos are
+  // fetched lazily when the place detail page renders.
+  const rows = (data ?? []).map(({ guide_places, place_photos, ...p }) => {
+    const coverPath = (place_photos ?? [])
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order)[0]?.storage_path;
+    return {
+      ...p,
+      guide_ids: (guide_places ?? []).map((gp) => gp.guide_id),
+      _coverPath: coverPath as string | undefined,
+    };
+  });
+
+  const coverPaths = rows
+    .map((r) => r._coverPath)
+    .filter((p): p is string => Boolean(p));
+  let urlByPath = new Map<string, string>();
+  if (coverPaths.length > 0) {
+    const { data: signed } = await supabase.storage
+      .from(PHOTO_BUCKET)
+      .createSignedUrls(coverPaths, PHOTO_URL_TTL_SECONDS);
+    urlByPath = new Map(
+      (signed ?? []).flatMap((s) =>
+        s.signedUrl && s.path ? [[s.path, s.signedUrl] as const] : [],
+      ),
+    );
+  }
+
+  return rows.map(({ _coverPath, ...rest }) => ({
+    ...rest,
+    cover_url: _coverPath ? (urlByPath.get(_coverPath) ?? null) : null,
   }));
 }
 
@@ -81,14 +115,18 @@ export async function listPlacesInGuide(
   );
   const signedById = new Map(signed.map((p) => [p.id, p]));
 
-  return rows.map(({ guide_places, place_photos, ...p }) => ({
-    ...p,
-    guide_ids: (guide_places ?? []).map((gp) => gp.guide_id),
-    photos: (place_photos ?? [])
+  return rows.map(({ guide_places, place_photos, ...p }) => {
+    const orderedPhotos = (place_photos ?? [])
       .sort((a, b) => a.sort_order - b.sort_order)
       .map((ph) => signedById.get(ph.id)!)
-      .filter(Boolean),
-  }));
+      .filter(Boolean);
+    return {
+      ...p,
+      guide_ids: (guide_places ?? []).map((gp) => gp.guide_id),
+      cover_url: orderedPhotos[0]?.url ?? null,
+      photos: orderedPhotos,
+    };
+  });
 }
 
 export async function placeById(
@@ -109,6 +147,7 @@ export async function placeById(
   return {
     ...p,
     guide_ids: (guide_places ?? []).map((gp) => gp.guide_id),
+    cover_url: photos[0]?.url ?? null,
     photos,
   };
 }

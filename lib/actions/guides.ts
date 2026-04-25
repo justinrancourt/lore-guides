@@ -11,10 +11,11 @@ type GuideInsert = Database["public"]["Tables"]["guides"]["Insert"];
 
 export interface CreateGuideFormState {
   error: string | null;
-  fieldErrors?: { title?: string; type?: string };
+  fieldErrors?: { title?: string };
 }
 
 const VALID_TYPES = new Set(["city", "region", "trip", "theme"]);
+const DEFAULT_TYPE = "theme";
 const MAX_SLUG_ATTEMPTS = 50;
 
 function strField(form: FormData, name: string): string {
@@ -30,14 +31,17 @@ export async function createGuide(
   if (!profile) return { error: "Not signed in." };
 
   const title = strField(form, "title");
-  const type = strField(form, "type");
+  // The type field is no longer surfaced in the create form — it's kept in
+  // the schema for future trip/city-specific behavior. Seeds and any code
+  // path that supplies an explicit type still work.
+  const submittedType = strField(form, "type");
+  const type = VALID_TYPES.has(submittedType) ? submittedType : DEFAULT_TYPE;
   const scope = strField(form, "scope") || null;
   const intro = strField(form, "intro") || null;
   const color = strField(form, "color") || "#C17C4E";
 
   const fieldErrors: NonNullable<CreateGuideFormState["fieldErrors"]> = {};
   if (!title) fieldErrors.title = "Give your guide a title.";
-  if (!VALID_TYPES.has(type)) fieldErrors.type = "Pick a guide shape.";
   if (Object.keys(fieldErrors).length > 0) return { error: null, fieldErrors };
 
   const supabase = await createClient();

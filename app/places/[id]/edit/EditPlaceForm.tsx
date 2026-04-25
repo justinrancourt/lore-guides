@@ -10,7 +10,7 @@ import { NavBar } from "@/components/primitives/NavBar";
 import { BorderlessInput } from "@/components/primitives/BorderlessInput";
 import { NoteTextarea } from "@/components/primitives/NoteTextarea";
 import { ChipSelect } from "@/components/primitives/ChipSelect";
-import { Toggle } from "@/components/primitives/Toggle";
+import { TimeSensitiveField } from "@/components/primitives/TimeSensitiveField";
 import { PhotoStripEditor } from "@/components/place/PhotoStripEditor";
 
 interface EditPlaceFormProps {
@@ -24,7 +24,6 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
   const [type, setType] = useState<PlaceType | null>(
     (place.type as PlaceType | null) ?? null,
   );
-  const [tsEnabled, setTsEnabled] = useState(Boolean(place.time_sensitive));
 
   const boundEdit = editPlace.bind(null, place.id);
   const [state, action, pending] = useActionState<SavePlaceFormState, FormData>(
@@ -72,14 +71,10 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
           }
         />
 
-        {/* Hidden inputs reflect the controlled chip + toggle state. */}
+        {/* Hidden inputs reflect the controlled chip state. The TimeSensitive-
+            Field manages its own enabled flag + value. */}
         {bestTime && <input type="hidden" name="best_time" value={bestTime} />}
         {type && <input type="hidden" name="type" value={type} />}
-        <input
-          type="hidden"
-          name="time_sensitive_enabled"
-          value={tsEnabled ? "true" : "false"}
-        />
 
         <div className="flex flex-col gap-7 px-5 pb-16 pt-6">
           <Field label="Name">
@@ -124,8 +119,11 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
             />
           </Field>
 
-          <Field label="Best time">
+          <Field label="Best time of day">
             <ChipSelect value={bestTime} onChange={setBestTime} options={BEST_TIMES} />
+            <p className="m-0 mt-1.5 font-serif italic text-[12px] text-faint">
+              The bucket recipients filter by on the guide view.
+            </p>
           </Field>
 
           <Field label="Type">
@@ -141,25 +139,11 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
             />
           </Field>
 
-          <div className="flex flex-col gap-2 border-y border-border py-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="m-0 font-serif text-[14px] text-ink">
-                  Time-sensitive
-                </p>
-                <p className="m-0 mt-0.5 font-serif italic text-[12px] text-faint">
-                  Best at a specific time, day, or window
-                </p>
-              </div>
-              <Toggle enabled={tsEnabled} onChange={setTsEnabled} label="Time-sensitive" />
-            </div>
-            {tsEnabled && (
-              <BorderlessInput
-                name="time_sensitive"
-                defaultValue={place.time_sensitive ?? ""}
-                placeholder="Best before 9am"
-              />
-            )}
+          <div className="border-t border-border pt-4">
+            <TimeSensitiveField
+              name="time_sensitive"
+              defaultValue={place.time_sensitive ?? ""}
+            />
           </div>
 
           {state.error && (

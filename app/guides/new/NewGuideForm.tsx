@@ -2,9 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { cn } from "@/lib/cn";
-import type { GuideType } from "@/lib/types";
 import { BorderlessInput } from "@/components/primitives/BorderlessInput";
-import { Icon, IconPath } from "@/components/primitives/Icon";
 import { createGuide, type CreateGuideFormState } from "@/lib/actions/guides";
 
 const PALETTE = [
@@ -12,18 +10,7 @@ const PALETTE = [
   "#8B4E6B", "#C8A05C", "#5C6B8B", "#A68B6B",
 ];
 
-const PROMPTS: Record<GuideType, string> = {
-  city: "A guide to",
-  region: "A region called",
-  trip: "Trip to",
-  theme: "A guide to",
-};
-
-interface NewGuideFormProps {
-  type: GuideType;
-}
-
-export function NewGuideForm({ type }: NewGuideFormProps) {
+export function NewGuideForm() {
   const [color, setColor] = useState(PALETTE[0]);
   const [state, action, pending] = useActionState<CreateGuideFormState, FormData>(
     createGuide,
@@ -32,7 +19,6 @@ export function NewGuideForm({ type }: NewGuideFormProps) {
 
   return (
     <form action={action} className="flex flex-col gap-7 px-5 pb-24 pt-7">
-      <input type="hidden" name="type" value={type} />
       <input type="hidden" name="color" value={color} />
 
       <div>
@@ -40,14 +26,14 @@ export function NewGuideForm({ type }: NewGuideFormProps) {
           className="m-0 mb-2 font-serif text-[11px] uppercase text-accent"
           style={{ letterSpacing: "0.18em" }}
         >
-          {PROMPTS[type]}
+          A guide to
         </p>
         <BorderlessInput
           variant="title"
           name="title"
           required
           autoFocus
-          placeholder="Valencia"
+          placeholder="Valencia, Best bars, Spring 2024…"
         />
         <p className="m-0 mt-1.5 font-serif italic text-[12px] text-faint">
           A few words. Don&rsquo;t overthink the title.
@@ -59,16 +45,14 @@ export function NewGuideForm({ type }: NewGuideFormProps) {
         )}
       </div>
 
-      <Field label={type === "trip" ? "When" : "Scope · optional"}>
+      <Field label="Scope · optional">
         <BorderlessInput
           name="scope"
-          placeholder={
-            type === "trip" ? "Spring 2024" : "Spain, Worldwide, etc."
-          }
+          placeholder="A city, a region, a feeling"
         />
       </Field>
 
-      <Field label="Why this guide">
+      <Field label="Why this guide · optional">
         <textarea
           name="intro"
           placeholder="What's the soul of this guide?"
@@ -94,15 +78,6 @@ export function NewGuideForm({ type }: NewGuideFormProps) {
           ))}
         </div>
       </Field>
-
-      <div className="border-l-[3px] border-banner-icon bg-banner-bg px-3.5 py-2.5">
-        <p className="m-0 flex items-start gap-2 font-serif italic text-[13px] text-ink-muted">
-          <Icon path={IconPath.info} size={14} color="#A67A3E" />
-          {type === "theme"
-            ? "Themes can span any city or region — your places carry their own location."
-            : "Once you create a guide, you can add places to it from anywhere."}
-        </p>
-      </div>
 
       {state.error && (
         <p className="m-0 font-serif italic text-[13px] text-accent">

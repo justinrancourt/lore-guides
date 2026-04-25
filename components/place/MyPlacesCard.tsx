@@ -11,6 +11,11 @@ interface MyPlacesCardProps {
 
 export function MyPlacesCard({ place, guides }: MyPlacesCardProps) {
   const placeGuides = guides.filter((g) => place.guide_ids.includes(g.id));
+  // Thumbnail fallback chain: real photo → first guide's cover color →
+  // deterministic warm color from the place id (so unfiled, photo-less
+  // places still look intentional rather than uniformly gray).
+  const fallbackColor =
+    placeGuides[0]?.color ?? placeholderColor(place.id);
   return (
     <Link
       href={`/places/${place.id}`}
@@ -18,9 +23,19 @@ export function MyPlacesCard({ place, guides }: MyPlacesCardProps) {
     >
       <div className="flex items-start gap-4">
         <div
-          className="h-14 w-14 shrink-0"
-          style={{ backgroundColor: placeholderColor(place.id) }}
-        />
+          className="h-14 w-14 shrink-0 overflow-hidden"
+          style={{ backgroundColor: fallbackColor }}
+        >
+          {place.cover_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={place.cover_url}
+              alt=""
+              className="h-full w-full object-cover"
+              style={{ filter: "saturate(0.85)" }}
+            />
+          )}
+        </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-3">
             <span className="font-serif text-[16px] text-ink">
