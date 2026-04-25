@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { MyPlacesList } from "@/components/place/MyPlacesList";
 import { EmptyHome } from "@/components/place/EmptyHome";
+import { SeedValenciaButton } from "@/components/shell/SeedValenciaButton";
 import { Waymark } from "@/components/primitives/Waymark";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { currentProfile } from "@/lib/auth";
@@ -17,11 +18,13 @@ export default async function HomePage() {
   ]);
 
   const unfiled = places.filter((p) => p.guide_ids.length === 0);
+  const showDevSeed = process.env.ALLOW_DEV_SEED === "true";
 
   if (places.length === 0) {
     return (
       <AppShell>
         <EmptyHome />
+        {showDevSeed && <SeedValenciaButton />}
       </AppShell>
     );
   }
@@ -53,6 +56,7 @@ export default async function HomePage() {
       )}
 
       <MyPlacesList places={places} guides={guides} unfiledCount={unfiled.length} />
+      {showDevSeed && <SeedValenciaButton />}
     </AppShell>
   );
 }

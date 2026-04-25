@@ -93,3 +93,26 @@ export async function deleteGuide(guideId: string): Promise<void> {
   revalidatePath("/home");
   redirect("/home/guides");
 }
+
+export async function setGuidePublic(
+  guideId: string,
+  isPublic: boolean,
+): Promise<void> {
+  const profile = await currentProfile();
+  if (!profile) throw new Error("Not signed in.");
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("guides")
+    .update({ is_public: isPublic })
+    .eq("id", guideId)
+    .eq("author_id", profile.id)
+    .select("slug")
+    .single();
+  if (error) throw error;
+
+  revalidatePath(`/guides/${data.slug}`);
+  revalidatePath(`/g/${data.slug}`);
+  revalidatePath("/home/guides");
+}
+

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Logo } from "@/components/primitives/Logo";
 import { Icon, IconPath } from "@/components/primitives/Icon";
@@ -9,6 +10,35 @@ import { listPlacesInGuide } from "@/lib/db/places";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const guide = await publicGuideBySlug(slug);
+  if (!guide) return { title: "Not found" };
+
+  const title = `${guide.title} — A guide by ${guide.author_name}`;
+  const description = guide.intro
+    ? guide.intro.slice(0, 200)
+    : `${guide.author_name}'s guide to ${guide.title}. Saved on Lore Guides.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      siteName: "Lore Guides",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
 }
 
 export default async function RecipientGuidePage({ params }: PageProps) {

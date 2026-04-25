@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { NavBar } from "@/components/primitives/NavBar";
@@ -7,6 +8,7 @@ import { GuideModeBtn } from "@/components/primitives/GuideModeBtn";
 import { Cover } from "@/components/primitives/Cover";
 import { GuideFooter } from "@/components/primitives/GuideFooter";
 import { GuidePlacesView } from "@/components/guide/GuidePlacesView";
+import { PublishControl } from "@/components/guide/PublishControl";
 import { CaptureProvider } from "@/components/capture/CaptureProvider";
 import { CaptureFab } from "@/components/shell/CaptureFab";
 import { currentProfile } from "@/lib/auth";
@@ -27,6 +29,11 @@ export default async function AuthorGuidePage({ params }: PageProps) {
 
   const places = await listPlacesInGuide(guide.id);
 
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "lore.guides";
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const publicUrl = `${proto}://${host}/g/${guide.slug}`;
+
   return (
     <CaptureProvider>
       <div className="device-column">
@@ -41,6 +48,11 @@ export default async function AuthorGuidePage({ params }: PageProps) {
           placeCount={places.length}
         />
         <GuidePlacesView city={guide.title} places={places} />
+        <PublishControl
+          guideId={guide.id}
+          isPublic={guide.is_public}
+          publicUrl={publicUrl}
+        />
         <div className="flex items-center justify-center gap-3 px-5 pb-4 pt-6">
           <Link
             href={`/guides/${guide.slug}/add`}
