@@ -7,26 +7,73 @@ export type GuideRow = Database["public"]["Tables"]["guides"]["Row"];
 
 export interface GuideWithCount extends GuideRow {
   place_count: number;
+  // Cover image auto-derived from the first place in the guide that has
+  // a photo. null when nothing is uploaded — callers fall back to color.
+  cover_url: string | null;
 }
+
+const PHOTO_BUCKET = "place-photos";
+const PHOTO_URL_TTL_SECONDS = 60 * 60;
 
 export async function listGuidesForUser(
   userId: string,
 ): Promise<GuideWithCount[]> {
   const supabase = await createClient();
 
-  // Pull guides + a guide_places fan-out, then collapse client-side. Two
-  // small queries beats a Postgres view for now.
+  // Pull guides + their guide_places + each linked place's photos in one
+  // query. Post-process to find the first photo of the first place per
+  // guide, then batch-sign all those storage paths together.
   const { data: rows, error } = await supabase
     .from("guides")
-    .select("*, guide_places(id)")
+    .select(
+      "*, guide_places(sort_order, places(place_photos(storage_path, sort_order)))",
+    )
     .eq("author_id", userId)
     .eq("is_archived", false)
     .order("created_at", { ascending: false });
-
   if (error) throw error;
-  return (rows ?? []).map(({ guide_places, ...g }) => ({
+
+  const enriched = (rows ?? []).map(({ guide_places, ...g }) => {
+    const sortedLinks = (guide_places ?? [])
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order);
+    let coverPath: string | undefined;
+    for (const link of sortedLinks) {
+      const photos = link.places?.place_photos ?? [];
+      const cover = photos
+        .slice()
+        .sort((a, b) => a.sort_order - b.sort_order)[0];
+      if (cover?.storage_path) {
+        coverPath = cover.storage_path;
+        break;
+      }
+    }
+    return {
+      ...g,
+      place_count: sortedLinks.length,
+      _coverPath: coverPath,
+    };
+  });
+
+  const coverPaths = enriched
+    .map((e) => e._coverPath)
+    .filter((p): p is string => Boolean(p));
+
+  let urlByPath = new Map<string, string>();
+  if (coverPaths.length > 0) {
+    const { data: signed } = await supabase.storage
+      .from(PHOTO_BUCKET)
+      .createSignedUrls(coverPaths, PHOTO_URL_TTL_SECONDS);
+    urlByPath = new Map(
+      (signed ?? []).flatMap((s) =>
+        s.signedUrl && s.path ? [[s.path, s.signedUrl] as const] : [],
+      ),
+    );
+  }
+
+  return enriched.map(({ _coverPath, ...g }) => ({
     ...g,
-    place_count: guide_places?.length ?? 0,
+    cover_url: _coverPath ? (urlByPath.get(_coverPath) ?? null) : null,
   }));
 }
 

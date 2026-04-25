@@ -12,9 +12,19 @@ export function GuideRowCard({ guide }: GuideRowCardProps) {
       className="flex items-start gap-4 border-t border-border px-0 py-5"
     >
       <div
-        className="h-[52px] w-[72px] shrink-0"
+        className="h-[52px] w-[72px] shrink-0 overflow-hidden"
         style={{ backgroundColor: guide.color }}
-      />
+      >
+        {guide.cover_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={guide.cover_url}
+            alt=""
+            className="h-full w-full object-cover"
+            style={{ filter: "saturate(0.85)" }}
+          />
+        )}
+      </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-3">
           <span className="font-serif text-[18px] text-ink">{guide.title}</span>
