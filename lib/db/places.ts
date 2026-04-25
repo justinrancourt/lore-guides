@@ -129,6 +129,34 @@ export async function listPlacesInGuide(
   });
 }
 
+// Public-guide-aware place fetch. Returns the place only if it lives
+// in the public guide identified by slug; otherwise null. Used by the
+// recipient deep-link route /g/[slug]/p/[id], which must never expose
+// places from non-public guides regardless of whether the user is signed
+// in (RLS would block anyway, but a clean null path is friendlier).
+export async function placeInPublicGuide(
+  guideSlug: string,
+  placeId: string,
+): Promise<{
+  place: PlaceWithGuidesAndPhotos;
+  siblings: PlaceWithGuidesAndPhotos[];
+} | null> {
+  const supabase = await createClient();
+  const { data: guide } = await supabase
+    .from("guides")
+    .select("id")
+    .eq("slug", guideSlug)
+    .eq("is_public", true)
+    .maybeSingle();
+  if (!guide) return null;
+
+  const all = await listPlacesInGuide(guide.id);
+  const place = all.find((p) => p.id === placeId);
+  if (!place) return null;
+  const siblings = all.filter((p) => p.id !== placeId);
+  return { place, siblings };
+}
+
 export async function placeById(
   id: string,
 ): Promise<PlaceWithGuidesAndPhotos | null> {

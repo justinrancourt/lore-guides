@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { TimeSensitiveFlag } from "@/components/primitives/TimeSensitiveFlag";
 import { PhotoBlock } from "@/components/primitives/PhotoBlock";
@@ -14,6 +13,12 @@ interface RecipientPlaceRowProps {
   authorName: string;
   saved: boolean;
   onToggleSaved: () => void;
+  /** Active = expanded + map pin highlighted. Single source of truth
+   *  lives in the parent (RecipientLandingShell) so the map and list
+   *  stay in sync without duplicated local state. */
+  isActive?: boolean;
+  /** Toggle handler — fires with the next active state. */
+  onToggleActive?: (next: boolean) => void;
 }
 
 export function RecipientPlaceRow({
@@ -22,13 +27,21 @@ export function RecipientPlaceRow({
   authorName,
   saved,
   onToggleSaved,
+  isActive,
+  onToggleActive,
 }: RecipientPlaceRowProps) {
-  const [expanded, setExpanded] = useState(false);
   const ordinal = String(index).padStart(2, "0");
   const cover = place.photos[0];
 
+  const handleExpand = () => onToggleActive?.(!isActive);
+
   return (
-    <div className="flex items-baseline gap-4 border-t border-border py-5">
+    <div
+      className={cn(
+        "flex items-baseline gap-4 border-t border-border py-5 transition-colors",
+        isActive && "bg-[rgba(193,124,78,0.05)]",
+      )}
+    >
       <span
         className="w-5 shrink-0 font-serif text-[12px] uppercase text-faint"
         style={{ letterSpacing: "0.14em" }}
@@ -37,7 +50,7 @@ export function RecipientPlaceRow({
       </span>
       <button
         type="button"
-        onClick={() => setExpanded((v) => !v)}
+        onClick={handleExpand}
         className="min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
       >
         <span className="block font-serif text-place text-ink">{place.name}</span>
@@ -64,7 +77,7 @@ export function RecipientPlaceRow({
             {place.vibe}
           </p>
         )}
-        {expanded && (
+        {isActive && (
           <div className="mt-3.5">
             {place.note && (
               <>
@@ -96,9 +109,7 @@ export function RecipientPlaceRow({
           onToggleSaved();
         }}
         aria-label={saved ? "Saved" : "Save place"}
-        className={cn(
-          "flex h-8 w-8 shrink-0 items-center justify-center self-start border-0 bg-transparent",
-        )}
+        className="flex h-8 w-8 shrink-0 items-center justify-center self-start border-0 bg-transparent"
       >
         <Icon
           path={IconPath.bookmark}
