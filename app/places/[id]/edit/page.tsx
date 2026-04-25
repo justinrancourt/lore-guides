@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { placeById } from "@/lib/mock-data";
+import { currentProfile } from "@/lib/auth";
+import { placeById } from "@/lib/db/places";
 import { EditPlaceForm } from "./EditPlaceForm";
 
 interface PageProps {
@@ -8,7 +9,9 @@ interface PageProps {
 
 export default async function EditPlacePage({ params }: PageProps) {
   const { id } = await params;
-  const place = placeById(id);
-  if (!place) notFound();
+  const profile = await currentProfile();
+  if (!profile) return null;
+  const place = await placeById(id);
+  if (!place || place.created_by !== profile.id) notFound();
   return <EditPlaceForm place={place} />;
 }

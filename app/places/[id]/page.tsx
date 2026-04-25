@@ -5,7 +5,10 @@ import { BackBtn } from "@/components/primitives/BackBtn";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { TimeSensitiveFlag } from "@/components/primitives/TimeSensitiveFlag";
 import { PhotoBlock } from "@/components/primitives/PhotoBlock";
-import { guides, placeById } from "@/lib/mock-data";
+import { currentProfile } from "@/lib/auth";
+import { listGuidesForUser } from "@/lib/db/guides";
+import { placeById } from "@/lib/db/places";
+import { placeholderColor } from "@/lib/format";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -13,9 +16,15 @@ interface PageProps {
 
 export default async function PlaceDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const place = placeById(id);
-  if (!place) notFound();
-  const placeGuides = guides.filter((g) => place.guideIds.includes(g.id));
+  const profile = await currentProfile();
+  if (!profile) return null;
+
+  const place = await placeById(id);
+  if (!place || place.created_by !== profile.id) notFound();
+
+  const allGuides = await listGuidesForUser(profile.id);
+  const placeGuides = allGuides.filter((g) => place.guide_ids.includes(g.id));
+  const cover = place.photos[0];
 
   return (
     <div className="device-column">
@@ -42,12 +51,12 @@ export default async function PlaceDetailPage({ params }: PageProps) {
       />
 
       <article className="px-5 pb-20 pt-6">
-        {place.bestTime && place.type && (
+        {place.best_time && place.type && (
           <p
             className="m-0 mb-2 font-serif text-[11px] uppercase text-faint"
             style={{ letterSpacing: "0.14em" }}
           >
-            {place.bestTime} · {place.type}
+            {place.best_time} · {place.type}
           </p>
         )}
         <h1 className="m-0 font-serif text-[32px] leading-[1.1] text-ink">
@@ -58,9 +67,9 @@ export default async function PlaceDetailPage({ params }: PageProps) {
             {place.neighborhood}
           </p>
         )}
-        {place.timeSensitive && (
+        {place.time_sensitive && (
           <div className="mt-3">
-            <TimeSensitiveFlag text={place.timeSensitive} />
+            <TimeSensitiveFlag text={place.time_sensitive} />
           </div>
         )}
         {place.vibe && (
@@ -68,8 +77,11 @@ export default async function PlaceDetailPage({ params }: PageProps) {
             {place.vibe}
           </p>
         )}
-        {place.photoColor && (
-          <PhotoBlock color={place.photoColor} caption={place.photoCaption} />
+        {cover && (
+          <PhotoBlock
+            color={placeholderColor(place.id)}
+            caption={cover.caption ?? undefined}
+          />
         )}
         {place.note && (
           <div className="mt-2">
@@ -109,15 +121,19 @@ export default async function PlaceDetailPage({ params }: PageProps) {
             </div>
           </div>
         )}
-        <div className="mt-8 flex items-center gap-5 border-t border-border pt-5">
-          <a
-            href="https://www.google.com/maps"
-            className="inline-flex items-center gap-1.5 font-serif text-[13px] text-accent"
-          >
-            <Icon path={IconPath.external} size={12} color="#C17C4E" />
-            Open in Maps
-          </a>
-        </div>
+        {place.address && (
+          <div className="mt-8 flex items-center gap-5 border-t border-border pt-5">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.name} ${place.address}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-serif text-[13px] text-accent"
+            >
+              <Icon path={IconPath.external} size={12} color="#C17C4E" />
+              Open in Maps
+            </a>
+          </div>
+        )}
       </article>
     </div>
   );

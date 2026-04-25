@@ -1,12 +1,11 @@
 import Link from "next/link";
-import type { Guide } from "@/lib/types";
+import type { GuideWithCount } from "@/lib/db/guides";
 
 interface GuideRowCardProps {
-  guide: Guide;
-  count: number;
+  guide: GuideWithCount;
 }
 
-export function GuideRowCard({ guide, count }: GuideRowCardProps) {
+export function GuideRowCard({ guide }: GuideRowCardProps) {
   return (
     <Link
       href={`/guides/${guide.slug}`}
@@ -28,7 +27,7 @@ export function GuideRowCard({ guide, count }: GuideRowCardProps) {
         </div>
         <p className="m-0 mt-1 font-serif italic text-[12px] text-faint">
           {guide.scope ? `${guide.scope} · ` : ""}
-          {count} places
+          {guide.place_count} places
         </p>
       </div>
     </Link>

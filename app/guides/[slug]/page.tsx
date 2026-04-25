@@ -9,7 +9,9 @@ import { GuideFooter } from "@/components/primitives/GuideFooter";
 import { GuidePlacesView } from "@/components/guide/GuidePlacesView";
 import { CaptureProvider } from "@/components/capture/CaptureProvider";
 import { CaptureFab } from "@/components/shell/CaptureFab";
-import { guideBySlug, me, placesInGuide } from "@/lib/mock-data";
+import { currentProfile } from "@/lib/auth";
+import { guideBySlug } from "@/lib/db/guides";
+import { listPlacesInGuide } from "@/lib/db/places";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -17,10 +19,13 @@ interface PageProps {
 
 export default async function AuthorGuidePage({ params }: PageProps) {
   const { slug } = await params;
-  const guide = guideBySlug(slug);
-  if (!guide) notFound();
+  const profile = await currentProfile();
+  if (!profile) return null;
 
-  const places = placesInGuide(guide.id);
+  const guide = await guideBySlug(slug);
+  if (!guide || guide.author_id !== profile.id) notFound();
+
+  const places = await listPlacesInGuide(guide.id);
 
   return (
     <CaptureProvider>
@@ -32,7 +37,7 @@ export default async function AuthorGuidePage({ params }: PageProps) {
         />
         <Cover
           guide={guide}
-          authorName={me.displayName}
+          authorName={profile.display_name}
           placeCount={places.length}
         />
         <GuidePlacesView city={guide.title} places={places} />
@@ -45,7 +50,7 @@ export default async function AuthorGuidePage({ params }: PageProps) {
             + Add a place
           </Link>
         </div>
-        <GuideFooter authorName={me.displayName} city={guide.title} />
+        <GuideFooter authorName={profile.display_name} city={guide.title} />
         <CaptureFab />
       </div>
     </CaptureProvider>

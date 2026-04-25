@@ -3,10 +3,29 @@ import { AppShell } from "@/components/shell/AppShell";
 import { MyPlacesList } from "@/components/place/MyPlacesList";
 import { Waymark } from "@/components/primitives/Waymark";
 import { Icon, IconPath } from "@/components/primitives/Icon";
-import { guides, places, unfiledPlaces } from "@/lib/mock-data";
+import { currentProfile } from "@/lib/auth";
+import { listGuidesForUser } from "@/lib/db/guides";
+import { listPlacesForUser } from "@/lib/db/places";
 
-export default function HomePage() {
-  const unfiled = unfiledPlaces();
+export default async function HomePage() {
+  const profile = await currentProfile();
+  if (!profile) return null; // proxy will have redirected; defensive
+
+  const [places, guides] = await Promise.all([
+    listPlacesForUser(profile.id),
+    listGuidesForUser(profile.id),
+  ]);
+
+  const unfiled = places.filter((p) => p.guide_ids.length === 0);
+
+  if (places.length === 0) {
+    return (
+      <AppShell>
+        <EmptyHome />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell>
       <header className="px-5 pt-5">
@@ -19,15 +38,10 @@ export default function HomePage() {
       </header>
 
       {unfiled.length > 0 && (
-        <Link
-          href="/home?filter=unfiled"
-          className="mx-5 mt-4 flex items-center gap-3 border-l-[3px] border-banner-icon bg-banner-bg px-4 py-2.5"
-        >
+        <div className="mx-5 mt-4 flex items-center gap-3 border-l-[3px] border-banner-icon bg-banner-bg px-4 py-2.5">
           <Waymark size={14} color="#C8A05C" />
           <div className="min-w-0 flex-1">
-            <p
-              className="m-0 font-serif text-[13px] text-ink"
-            >
+            <p className="m-0 font-serif text-[13px] text-ink">
               <span className="text-ink">{unfiled.length}</span> unfiled places
             </p>
             <p className="m-0 font-serif italic text-[12px] text-ink-muted">
@@ -35,14 +49,32 @@ export default function HomePage() {
             </p>
           </div>
           <Icon path={IconPath.chevRight} size={14} color="#9C8E7C" />
-        </Link>
+        </div>
       )}
 
-      <MyPlacesList
-        places={places}
-        guides={guides}
-        unfiledCount={unfiled.length}
-      />
+      <MyPlacesList places={places} guides={guides} unfiledCount={unfiled.length} />
     </AppShell>
+  );
+}
+
+function EmptyHome() {
+  return (
+    <div className="flex flex-col items-center px-5 pt-20 text-center">
+      <Waymark size={28} color="#C0B8B0" />
+      <h1 className="m-0 mt-5 font-serif text-title text-ink">
+        Nothing here yet — that&rsquo;s fine.
+      </h1>
+      <p className="m-0 mt-3 max-w-intro font-serif italic text-[14px] leading-[1.6] text-ink-muted">
+        Save a place you love, or start a guide. The capture button at the
+        bottom-right is the fastest path.
+      </p>
+      <Link
+        href="/guides/new"
+        className="mt-7 block w-full max-w-[260px] bg-ink py-3 font-serif text-[12px] uppercase text-bg"
+        style={{ letterSpacing: "0.14em" }}
+      >
+        Start a guide
+      </Link>
+    </div>
   );
 }

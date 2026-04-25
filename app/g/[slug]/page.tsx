@@ -4,7 +4,8 @@ import { Icon, IconPath } from "@/components/primitives/Icon";
 import { Cover } from "@/components/primitives/Cover";
 import { Waymark } from "@/components/primitives/Waymark";
 import { RecipientGuideView } from "@/components/recipient/RecipientGuideView";
-import { guideBySlug, me, placesInGuide } from "@/lib/mock-data";
+import { publicGuideBySlug } from "@/lib/db/guides";
+import { listPlacesInGuide } from "@/lib/db/places";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -12,9 +13,9 @@ interface PageProps {
 
 export default async function RecipientGuidePage({ params }: PageProps) {
   const { slug } = await params;
-  const guide = guideBySlug(slug);
+  const guide = await publicGuideBySlug(slug);
   if (!guide) notFound();
-  const places = placesInGuide(guide.id);
+  const places = await listPlacesInGuide(guide.id);
 
   return (
     <div className="device-column">
@@ -31,20 +32,20 @@ export default async function RecipientGuidePage({ params }: PageProps) {
 
       <Cover
         guide={guide}
-        authorName={me.displayName}
+        authorName={guide.author_name}
         placeCount={places.length}
       />
 
       <RecipientGuideView
         city={guide.title}
-        authorName={me.displayName}
+        authorName={guide.author_name}
         places={places}
       />
 
       <section className="px-5 pb-12 pt-10 text-center">
         <div className="mx-auto mb-6 h-px w-8 bg-accent" />
         <p className="m-0 mb-7 font-serif italic text-[14px] text-ink-muted">
-          That&rsquo;s all {me.displayName}&rsquo;s {guide.title}.
+          That&rsquo;s all {guide.author_name}&rsquo;s {guide.title}.
         </p>
         <div className="border border-border bg-surface px-6 pb-7 pt-7 text-center">
           <div className="mx-auto mb-3 inline-block">

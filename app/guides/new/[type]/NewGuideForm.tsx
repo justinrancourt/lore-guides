@@ -1,20 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
+import { cn } from "@/lib/cn";
 import type { GuideType } from "@/lib/types";
 import { BorderlessInput } from "@/components/primitives/BorderlessInput";
 import { Icon, IconPath } from "@/components/primitives/Icon";
-import { cn } from "@/lib/cn";
+import { createGuide, type CreateGuideFormState } from "@/lib/actions/guides";
 
 const PALETTE = [
-  "#C17C4E", // terracotta
-  "#7A8B5E", // sage
-  "#4A6B8B", // navy
-  "#6B4E3D", // espresso
-  "#8B4E6B", // plum
-  "#C8A05C", // amber
-  "#5C6B8B", // dusty blue
-  "#A68B6B", // sand
+  "#C17C4E", "#7A8B5E", "#4A6B8B", "#6B4E3D",
+  "#8B4E6B", "#C8A05C", "#5C6B8B", "#A68B6B",
 ];
 
 const PROMPTS: Record<GuideType, string> = {
@@ -29,13 +24,17 @@ interface NewGuideFormProps {
 }
 
 export function NewGuideForm({ type }: NewGuideFormProps) {
-  const [title, setTitle] = useState("");
-  const [scope, setScope] = useState("");
-  const [intro, setIntro] = useState("");
   const [color, setColor] = useState(PALETTE[0]);
+  const [state, action, pending] = useActionState<CreateGuideFormState, FormData>(
+    createGuide,
+    { error: null },
+  );
 
   return (
-    <form className="flex flex-col gap-7 px-5 pb-24 pt-7">
+    <form action={action} className="flex flex-col gap-7 px-5 pb-24 pt-7">
+      <input type="hidden" name="type" value={type} />
+      <input type="hidden" name="color" value={color} />
+
       <div>
         <p
           className="m-0 mb-2 font-serif text-[11px] uppercase text-accent"
@@ -45,20 +44,24 @@ export function NewGuideForm({ type }: NewGuideFormProps) {
         </p>
         <BorderlessInput
           variant="title"
+          name="title"
+          required
           autoFocus
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
           placeholder="Valencia"
         />
         <p className="m-0 mt-1.5 font-serif italic text-[12px] text-faint">
           A few words. Don&rsquo;t overthink the title.
         </p>
+        {state.fieldErrors?.title && (
+          <p className="m-0 mt-2 font-serif italic text-[13px] text-accent">
+            {state.fieldErrors.title}
+          </p>
+        )}
       </div>
 
       <Field label={type === "trip" ? "When" : "Scope · optional"}>
         <BorderlessInput
-          value={scope}
-          onChange={(e) => setScope(e.target.value)}
+          name="scope"
           placeholder={
             type === "trip" ? "Spring 2024" : "Spain, Worldwide, etc."
           }
@@ -67,8 +70,7 @@ export function NewGuideForm({ type }: NewGuideFormProps) {
 
       <Field label="Why this guide">
         <textarea
-          value={intro}
-          onChange={(e) => setIntro(e.target.value)}
+          name="intro"
           placeholder="What's the soul of this guide?"
           className="block w-full resize-none border-0 border-b border-border bg-transparent px-0 py-1.5 font-serif italic text-[15px] leading-[1.6] text-ink-muted outline-none focus:border-ink"
           rows={3}
@@ -102,17 +104,20 @@ export function NewGuideForm({ type }: NewGuideFormProps) {
         </p>
       </div>
 
+      {state.error && (
+        <p className="m-0 font-serif italic text-[13px] text-accent">
+          {state.error}
+        </p>
+      )}
+
       <div className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 bg-bg px-5 pb-5 pt-4">
         <button
-          type="button"
-          disabled={!title}
-          className={cn(
-            "block w-full bg-ink py-3 font-serif text-[12px] uppercase text-bg",
-            !title && "opacity-40",
-          )}
+          type="submit"
+          disabled={pending}
+          className="block w-full bg-ink py-3 font-serif text-[12px] uppercase text-bg disabled:opacity-50"
           style={{ letterSpacing: "0.14em" }}
         >
-          Create guide
+          {pending ? "Creating…" : "Create guide"}
         </button>
       </div>
     </form>

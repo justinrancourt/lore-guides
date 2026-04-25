@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import type { Guide, Place } from "@/lib/types";
+import type { GuideRow } from "@/lib/db/guides";
+import type { PlaceWithGuides } from "@/lib/db/places";
 import { cn } from "@/lib/cn";
 import { MyPlacesCard } from "./MyPlacesCard";
 
 interface MyPlacesListProps {
-  places: Place[];
-  guides: Guide[];
+  places: PlaceWithGuides[];
+  guides: GuideRow[];
   unfiledCount: number;
 }
 
@@ -24,8 +25,8 @@ export function MyPlacesList({
     filter === "all"
       ? places
       : filter === "unfiled"
-        ? places.filter((p) => p.guideIds.length === 0)
-        : places.filter((p) => p.guideIds.includes(filter));
+        ? places.filter((p) => p.guide_ids.length === 0)
+        : places.filter((p) => p.guide_ids.includes(filter));
 
   return (
     <>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Icon, IconPath } from "@/components/primitives/Icon";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { ChipSelect } from "@/components/primitives/ChipSelect";
 import { NoteTextarea } from "@/components/primitives/NoteTextarea";
 import { PLACE_TYPES, type PlaceType } from "@/lib/types";
+import { quickCapture, type SavePlaceFormState } from "@/lib/actions/places";
 
 interface CaptureSheetProps {
   open: boolean;
@@ -13,7 +13,7 @@ interface CaptureSheetProps {
 
 // State resets implicitly: when `open` is false we render nothing, so the
 // next time the sheet opens the component re-mounts with fresh useState
-// defaults. No effect needed.
+// defaults. No effect needed for reset.
 export function CaptureSheet({ open, onClose }: CaptureSheetProps) {
   if (!open) return null;
   return <CaptureSheetBody onClose={onClose} />;
@@ -21,7 +21,25 @@ export function CaptureSheet({ open, onClose }: CaptureSheetProps) {
 
 function CaptureSheetBody({ onClose }: { onClose: () => void }) {
   const [type, setType] = useState<PlaceType | null>(null);
-  const [note, setNote] = useState("");
+  const submittedRef = useRef(false);
+
+  const [state, action, pending] = useActionState<SavePlaceFormState, FormData>(
+    quickCapture,
+    { error: null },
+  );
+
+  // Auto-close after a successful submit (state stops pending and has no
+  // error). The submittedRef gate avoids closing on the initial render.
+  useEffect(() => {
+    if (submittedRef.current && !pending && state.error === null) {
+      onClose();
+    }
+  }, [pending, state, onClose]);
+
+  const handleAction = (fd: FormData) => {
+    submittedRef.current = true;
+    action(fd);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
@@ -31,38 +49,50 @@ function CaptureSheetBody({ onClose }: { onClose: () => void }) {
         onClick={onClose}
         className="flex-1 border-0 bg-[rgba(30,25,20,0.38)]"
       />
-      <div className="bg-bg shadow-peek max-h-[85%] overflow-y-auto">
+      <form
+        action={handleAction}
+        className="bg-bg shadow-peek max-h-[85%] overflow-y-auto"
+      >
+        {type && <input type="hidden" name="type" value={type} />}
         <div className="mx-auto mb-2 mt-3 h-1 w-9 rounded-pill bg-border-bold" />
         <div className="flex items-center justify-between px-5 pb-3 pt-1.5">
           <h2 className="m-0 font-serif text-[18px] text-ink">
             Capture a place
           </h2>
           <button
-            type="button"
-            onClick={onClose}
-            className="font-serif text-[12px] uppercase text-accent"
+            type="submit"
+            disabled={pending}
+            className="font-serif text-[12px] uppercase text-accent disabled:opacity-50"
             style={{ letterSpacing: "0.14em" }}
           >
-            Save
+            {pending ? "Saving…" : "Save"}
           </button>
         </div>
 
-        <div className="px-5 pb-2 pt-2 border-t border-border">
-          <div className="flex items-center gap-2 text-faint">
-            <Icon path={IconPath.mapPin} size={14} color="#9C8E7C" />
-            <span className="font-serif italic text-[12px]">
-              Detected from your current location
-            </span>
-          </div>
-          <p className="m-0 mt-2 font-serif text-[15px] text-ink">
-            The Anchor
+        <div className="border-t border-border px-5 py-3">
+          <p
+            className="m-0 mb-1.5 font-serif text-[11px] uppercase text-faint"
+            style={{ letterSpacing: "0.14em" }}
+          >
+            What did you find?
           </p>
-          <p className="m-0 mt-0.5 font-serif italic text-[12px] text-faint">
-            Islamorada, FL · Drink
-          </p>
+          <input
+            type="text"
+            name="name"
+            required
+            autoFocus
+            placeholder="The Anchor"
+            className="block w-full border-0 border-b border-border bg-transparent px-0 py-1.5 font-serif text-[16px] text-ink outline-none focus:border-ink"
+          />
+          <input
+            type="text"
+            name="neighborhood"
+            placeholder="Where? (optional)"
+            className="mt-3 block w-full border-0 border-b border-border bg-transparent px-0 py-1.5 font-serif italic text-[13px] text-faint outline-none focus:border-ink"
+          />
         </div>
 
-        <div className="px-5 py-4">
+        <div className="px-5 py-3">
           <p
             className="m-0 mb-1.5 font-serif text-[11px] uppercase text-faint"
             style={{ letterSpacing: "0.14em" }}
@@ -70,9 +100,8 @@ function CaptureSheetBody({ onClose }: { onClose: () => void }) {
             A note to your future self
           </p>
           <NoteTextarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Sunset dock bar. Key lime pie was surprisingly great."
+            name="note"
+            placeholder="Why does this stick with you?"
             minHeight={84}
           />
         </div>
@@ -84,25 +113,19 @@ function CaptureSheetBody({ onClose }: { onClose: () => void }) {
           >
             Type
           </p>
-          <ChipSelect
-            value={type}
-            onChange={setType}
-            options={PLACE_TYPES}
-          />
+          <ChipSelect value={type} onChange={setType} options={PLACE_TYPES} />
         </div>
 
-        <div className="flex items-center justify-between border-t border-border px-5 py-4">
-          <span className="font-serif text-[13px] text-ink-muted">
-            Save to My Places
-          </span>
-          <span
-            className="font-serif text-[12px] uppercase text-accent"
-            style={{ letterSpacing: "0.14em" }}
-          >
-            File in guide →
-          </span>
-        </div>
-      </div>
+        {state.error && (
+          <p className="m-0 px-5 pb-4 font-serif italic text-[13px] text-accent">
+            {state.error}
+          </p>
+        )}
+
+        <p className="border-t border-border px-5 py-4 font-serif italic text-[12px] text-faint">
+          Saves to My Places. File it in a guide later.
+        </p>
+      </form>
     </div>
   );
 }

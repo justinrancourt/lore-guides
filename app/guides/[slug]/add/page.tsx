@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { NavBar } from "@/components/primitives/NavBar";
 import { AddPlaceFlow } from "./AddPlaceFlow";
-import { guideBySlug } from "@/lib/mock-data";
+import { currentProfile } from "@/lib/auth";
+import { guideBySlug } from "@/lib/db/guides";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -10,8 +11,10 @@ interface PageProps {
 
 export default async function AddPlacePage({ params }: PageProps) {
   const { slug } = await params;
-  const guide = guideBySlug(slug);
-  if (!guide) notFound();
+  const profile = await currentProfile();
+  if (!profile) return null;
+  const guide = await guideBySlug(slug);
+  if (!guide || guide.author_id !== profile.id) notFound();
 
   return (
     <div className="device-column">
@@ -34,7 +37,7 @@ export default async function AddPlacePage({ params }: PageProps) {
           </span>
         }
       />
-      <AddPlaceFlow />
+      <AddPlaceFlow guideId={guide.id} />
     </div>
   );
 }

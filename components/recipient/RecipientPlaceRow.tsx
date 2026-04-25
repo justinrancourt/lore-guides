@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import type { Place } from "@/lib/types";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { TimeSensitiveFlag } from "@/components/primitives/TimeSensitiveFlag";
 import { PhotoBlock } from "@/components/primitives/PhotoBlock";
 import { cn } from "@/lib/cn";
+import { placeholderColor } from "@/lib/format";
+import type { PlaceWithGuidesAndPhotos } from "@/lib/db/places";
 
 interface RecipientPlaceRowProps {
-  place: Place;
+  place: PlaceWithGuidesAndPhotos;
   index: number;
   authorName: string;
   saved: boolean;
@@ -24,6 +25,7 @@ export function RecipientPlaceRow({
 }: RecipientPlaceRowProps) {
   const [expanded, setExpanded] = useState(false);
   const ordinal = String(index).padStart(2, "0");
+  const cover = place.photos[0];
 
   return (
     <div className="flex items-baseline gap-4 border-t border-border py-5">
@@ -38,16 +40,14 @@ export function RecipientPlaceRow({
         onClick={() => setExpanded((v) => !v)}
         className="min-w-0 flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
       >
-        <span className="block font-serif text-place text-ink">
-          {place.name}
-        </span>
+        <span className="block font-serif text-place text-ink">{place.name}</span>
         <div className="mb-2.5 mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          {place.bestTime && place.type && (
+          {place.best_time && place.type && (
             <span
               className="font-serif text-[11px] uppercase text-faint"
               style={{ letterSpacing: "0.12em" }}
             >
-              {place.bestTime} · {place.type}
+              {place.best_time} · {place.type}
             </span>
           )}
           {place.neighborhood && (
@@ -55,8 +55,8 @@ export function RecipientPlaceRow({
               {place.neighborhood}
             </span>
           )}
-          {place.timeSensitive && (
-            <TimeSensitiveFlag text={place.timeSensitive} />
+          {place.time_sensitive && (
+            <TimeSensitiveFlag text={place.time_sensitive} />
           )}
         </div>
         {place.vibe && (
@@ -79,8 +79,11 @@ export function RecipientPlaceRow({
                 </p>
               </>
             )}
-            {place.photoColor && (
-              <PhotoBlock color={place.photoColor} caption={place.photoCaption} />
+            {cover && (
+              <PhotoBlock
+                color={placeholderColor(place.id)}
+                caption={cover.caption ?? undefined}
+              />
             )}
           </div>
         )}

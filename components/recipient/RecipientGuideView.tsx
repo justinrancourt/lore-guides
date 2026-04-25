@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Place } from "@/lib/types";
 import { BEST_TIMES, PLACE_TYPES } from "@/lib/types";
+import type { PlaceWithGuidesAndPhotos } from "@/lib/db/places";
 import { DualFilterBar } from "@/components/primitives/DualFilterBar";
 import { StickyHeader } from "@/components/primitives/StickyHeader";
 import { Icon, IconPath } from "@/components/primitives/Icon";
@@ -17,7 +17,7 @@ type TypeFilter = (typeof TYPE_OPTIONS)[number];
 interface RecipientGuideViewProps {
   city: string;
   authorName: string;
-  places: Place[];
+  places: PlaceWithGuidesAndPhotos[];
 }
 
 export function RecipientGuideView({
@@ -33,7 +33,7 @@ export function RecipientGuideView({
     () =>
       places.filter(
         (p) =>
-          (time === "All" || p.bestTime === time) &&
+          (time === "All" || p.best_time === time) &&
           (type === "All" || p.type === type),
       ),
     [places, time, type],

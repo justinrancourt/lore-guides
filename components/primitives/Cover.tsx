@@ -1,7 +1,7 @@
-import type { Guide } from "@/lib/types";
+import type { GuideRow } from "@/lib/db/guides";
 
 interface CoverProps {
-  guide: Guide;
+  guide: GuideRow;
   authorName: string;
   placeCount: number;
   compact?: boolean;

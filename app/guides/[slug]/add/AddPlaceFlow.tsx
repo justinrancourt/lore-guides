@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { BEST_TIMES, PLACE_TYPES, type BestTime, type PlaceType } from "@/lib/types";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { ChipSelect } from "@/components/primitives/ChipSelect";
@@ -8,10 +8,15 @@ import { NoteTextarea } from "@/components/primitives/NoteTextarea";
 import { Toggle } from "@/components/primitives/Toggle";
 import { Waymark } from "@/components/primitives/Waymark";
 import { searchPlaces, type SearchResult } from "@/lib/places-search";
+import { addPlaceToGuide, type SavePlaceFormState } from "@/lib/actions/places";
 
-type Step = "search" | "annotate";
+type Step = "search" | "annotate" | "manual";
 
-export function AddPlaceFlow() {
+interface AddPlaceFlowProps {
+  guideId: string;
+}
+
+export function AddPlaceFlow({ guideId }: AddPlaceFlowProps) {
   const [step, setStep] = useState<Step>("search");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState<SearchResult | null>(null);
@@ -65,6 +70,18 @@ export function AddPlaceFlow() {
             </ul>
           </>
         )}
+        <div className="mt-8 text-center">
+          <button
+            type="button"
+            onClick={() => {
+              setPicked(null);
+              setStep("manual");
+            }}
+            className="font-serif italic text-[13px] text-accent"
+          >
+            Can&rsquo;t find it? Add manually
+          </button>
+        </div>
         {query.length >= 2 && results.length === 0 && (
           <p className="mt-10 text-center font-serif italic text-[14px] text-faint">
             No matches in our test fixtures. Try &ldquo;coffee&rdquo;,
@@ -75,24 +92,36 @@ export function AddPlaceFlow() {
     );
   }
 
-  return picked ? <AnnotateStep picked={picked} onBack={() => setStep("search")} /> : null;
+  return (
+    <AnnotateStep
+      picked={picked}
+      guideId={guideId}
+      onBack={() => setStep("search")}
+    />
+  );
 }
 
 function AnnotateStep({
   picked,
+  guideId,
   onBack,
 }: {
-  picked: SearchResult;
+  picked: SearchResult | null;
+  guideId: string;
   onBack: () => void;
 }) {
   const [bestTime, setBestTime] = useState<BestTime | null>(null);
   const [type, setType] = useState<PlaceType | null>(null);
-  const [note, setNote] = useState("");
   const [tsEnabled, setTsEnabled] = useState(false);
-  const [tsText, setTsText] = useState("");
+  const [name, setName] = useState(picked?.name ?? "");
+
+  const [state, action, pending] = useActionState<SavePlaceFormState, FormData>(
+    addPlaceToGuide,
+    { error: null },
+  );
 
   return (
-    <div className="px-5 pb-24 pt-6">
+    <form action={action} className="px-5 pb-24 pt-6">
       <button
         type="button"
         onClick={onBack}
@@ -101,23 +130,71 @@ function AnnotateStep({
       >
         ← Search
       </button>
-      <h1 className="m-0 font-serif text-[26px] text-ink">{picked.name}</h1>
-      <p className="m-0 mt-1 font-serif italic text-[13px] text-faint">
-        {picked.neighborhood ? `${picked.neighborhood} · ` : ""}
-        {picked.hint}
-      </p>
+
+      <input type="hidden" name="guide_id" value={guideId} />
+      {picked?.id && <input type="hidden" name="google_place_id" value={picked.id} />}
+      {picked?.address && <input type="hidden" name="address" value={picked.address} />}
+      {picked?.neighborhood && (
+        <input type="hidden" name="neighborhood" value={picked.neighborhood} />
+      )}
+      {bestTime && <input type="hidden" name="best_time" value={bestTime} />}
+      {type && <input type="hidden" name="type" value={type} />}
+      <input
+        type="hidden"
+        name="time_sensitive_enabled"
+        value={tsEnabled ? "true" : "false"}
+      />
+
+      {picked ? (
+        <>
+          <h1 className="m-0 font-serif text-[26px] text-ink">{picked.name}</h1>
+          <input type="hidden" name="name" value={picked.name} />
+          <p className="m-0 mt-1 font-serif italic text-[13px] text-faint">
+            {picked.neighborhood ? `${picked.neighborhood} · ` : ""}
+            {picked.hint}
+          </p>
+        </>
+      ) : (
+        <Field label="Name">
+          <input
+            type="text"
+            name="name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="What's it called?"
+            className="block w-full border-0 border-b border-border bg-transparent px-0 py-1.5 font-serif text-[26px] text-ink outline-none focus:border-ink"
+          />
+        </Field>
+      )}
 
       <div className="mt-7 flex flex-col gap-7">
+        {!picked && (
+          <Field label="Neighborhood">
+            <input
+              type="text"
+              name="neighborhood"
+              className="block w-full border-0 border-b border-border bg-transparent px-0 py-1.5 font-serif text-[14px] text-ink outline-none focus:border-ink"
+            />
+          </Field>
+        )}
         <Field label="Best time">
           <ChipSelect value={bestTime} onChange={setBestTime} options={BEST_TIMES} />
         </Field>
         <Field label="Type">
           <ChipSelect value={type} onChange={setType} options={PLACE_TYPES} />
         </Field>
+        <Field label="Vibe — one line · optional">
+          <input
+            type="text"
+            name="vibe"
+            placeholder="A line that captures the feeling"
+            className="block w-full border-0 border-b border-border bg-transparent px-0 py-1.5 font-serif italic text-[15px] text-ink-muted outline-none focus:border-ink"
+          />
+        </Field>
         <Field label="Your note">
           <NoteTextarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
+            name="note"
             placeholder="What did you eat, see, feel?"
           />
         </Field>
@@ -134,8 +211,7 @@ function AnnotateStep({
           {tsEnabled && (
             <input
               type="text"
-              value={tsText}
-              onChange={(e) => setTsText(e.target.value)}
+              name="time_sensitive"
               placeholder="Best before 9am"
               className="block w-full border-0 border-b border-border bg-transparent px-0 py-1.5 font-serif text-[14px] text-ink outline-none focus:border-ink"
             />
@@ -143,16 +219,23 @@ function AnnotateStep({
         </div>
       </div>
 
+      {state.error && (
+        <p className="mt-5 m-0 font-serif italic text-[13px] text-accent">
+          {state.error}
+        </p>
+      )}
+
       <div className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 bg-bg px-5 pb-5 pt-4">
         <button
-          type="button"
-          className="block w-full bg-ink py-3 font-serif text-[12px] uppercase text-bg"
+          type="submit"
+          disabled={pending}
+          className="block w-full bg-ink py-3 font-serif text-[12px] uppercase text-bg disabled:opacity-50"
           style={{ letterSpacing: "0.14em" }}
         >
-          Save place
+          {pending ? "Saving…" : "Save place"}
         </button>
       </div>
-    </div>
+    </form>
   );
 }
 
