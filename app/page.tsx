@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/primitives/Logo";
+import { currentProfile } from "@/lib/auth";
 
 const DEMO_LINKS: { href: string; label: string; note: string }[] = [
   { href: "/home", label: "/home", note: "My Places (default tab)" },
@@ -34,15 +35,56 @@ const DEMO_LINKS: { href: string; label: string; note: string }[] = [
   },
 ];
 
-export default function Index() {
+export default async function Index() {
+  const profile = await currentProfile();
   return (
     <div className="device-column px-5 py-8">
       <Logo size={18} />
-      <h1 className="m-0 mt-8 font-serif text-title text-ink">M1 demo screens</h1>
+      <div className="mt-6 flex items-baseline justify-between gap-3 border-b border-border pb-4">
+        {profile ? (
+          <>
+            <p className="m-0 font-serif italic text-[14px] text-ink-muted">
+              Signed in as{" "}
+              <span className="not-italic text-ink">{profile.display_name}</span>
+            </p>
+            <Link
+              href="/home"
+              className="font-serif text-[12px] uppercase text-accent"
+              style={{ letterSpacing: "0.14em" }}
+            >
+              Go to home →
+            </Link>
+          </>
+        ) : (
+          <>
+            <p className="m-0 font-serif italic text-[14px] text-ink-muted">
+              Not signed in.
+            </p>
+            <span className="flex gap-3">
+              <Link
+                href="/login"
+                className="font-serif text-[12px] uppercase text-accent"
+                style={{ letterSpacing: "0.14em" }}
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/signup"
+                className="font-serif text-[12px] uppercase text-ink-muted"
+                style={{ letterSpacing: "0.14em" }}
+              >
+                Sign up
+              </Link>
+            </span>
+          </>
+        )}
+      </div>
+      <h1 className="m-0 mt-8 font-serif text-title text-ink">Demo screens</h1>
       <p className="m-0 mt-2 font-serif italic text-[14px] text-ink-muted">
-        Each link renders a real screen against the Valencia mock data. No
-        backend yet — auth, persistence, and the Google Places search arrive
-        in M2 and M3.
+        Each link renders a real screen. Most require an account — the
+        recipient view at <span className="not-italic">/g/[slug]</span> is the
+        only one open to anyone. Data still comes from the mock fixture
+        until M3 swaps in real Supabase queries.
       </p>
       <ul className="mt-6 list-none p-0">
         {DEMO_LINKS.map((l) => (
