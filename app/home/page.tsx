@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { AppShell } from "@/components/shell/AppShell";
 import { MyPlacesList } from "@/components/place/MyPlacesList";
+import { EmptyHome } from "@/components/place/EmptyHome";
 import { Waymark } from "@/components/primitives/Waymark";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { currentProfile } from "@/lib/auth";
@@ -54,27 +54,5 @@ export default async function HomePage() {
 
       <MyPlacesList places={places} guides={guides} unfiledCount={unfiled.length} />
     </AppShell>
-  );
-}
-
-function EmptyHome() {
-  return (
-    <div className="flex flex-col items-center px-5 pt-20 text-center">
-      <Waymark size={28} color="#C0B8B0" />
-      <h1 className="m-0 mt-5 font-serif text-title text-ink">
-        Nothing here yet — that&rsquo;s fine.
-      </h1>
-      <p className="m-0 mt-3 max-w-intro font-serif italic text-[14px] leading-[1.6] text-ink-muted">
-        Save a place you love, or start a guide. The capture button at the
-        bottom-right is the fastest path.
-      </p>
-      <Link
-        href="/guides/new"
-        className="mt-7 block w-full max-w-[260px] bg-ink py-3 font-serif text-[12px] uppercase text-bg"
-        style={{ letterSpacing: "0.14em" }}
-      >
-        Start a guide
-      </Link>
-    </div>
   );
 }
