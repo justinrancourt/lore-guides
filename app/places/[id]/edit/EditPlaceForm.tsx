@@ -25,7 +25,7 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
   const [tsText, setTsText] = useState(place.timeSensitive ?? "");
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
+    <div className="device-column">
       <NavBar
         sticky
         left={

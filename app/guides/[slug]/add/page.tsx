@@ -14,7 +14,7 @@ export default async function AddPlacePage({ params }: PageProps) {
   if (!guide) notFound();
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
+    <div className="device-column">
       <NavBar
         sticky
         left={

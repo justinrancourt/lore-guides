@@ -24,7 +24,7 @@ export default async function AuthorGuidePage({ params }: PageProps) {
 
   return (
     <CaptureProvider>
-      <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
+      <div className="device-column">
         <NavBar
           left={<BackBtn label="Guides" href="/home/guides" />}
           center={<Logo size={11} />}

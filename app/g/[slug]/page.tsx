@@ -17,7 +17,7 @@ export default async function RecipientGuidePage({ params }: PageProps) {
   const places = placesInGuide(guide.id);
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
+    <div className="device-column">
       <header className="flex items-center justify-between border-b border-border px-5 py-3">
         <Logo size={11} href="/" />
         <button

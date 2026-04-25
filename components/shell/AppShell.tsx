@@ -19,7 +19,7 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <CaptureProvider>
-      <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
+      <div className="device-column">
         <NavBar
           left={<Logo href="/home" />}
           right={

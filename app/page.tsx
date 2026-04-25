@@ -36,7 +36,7 @@ const DEMO_LINKS: { href: string; label: string; note: string }[] = [
 
 export default function Index() {
   return (
-    <div className="mx-auto min-h-screen max-w-md bg-bg px-5 py-8">
+    <div className="device-column px-5 py-8">
       <Logo size={18} />
       <h1 className="m-0 mt-8 font-serif text-title text-ink">M1 demo screens</h1>
       <p className="m-0 mt-2 font-serif italic text-[14px] text-ink-muted">

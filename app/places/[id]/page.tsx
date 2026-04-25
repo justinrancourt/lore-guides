@@ -18,7 +18,7 @@ export default async function PlaceDetailPage({ params }: PageProps) {
   const placeGuides = guides.filter((g) => place.guideIds.includes(g.id));
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
+    <div className="device-column">
       <NavBar
         sticky
         left={<BackBtn label="Back" href="/home" />}

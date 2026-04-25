@@ -15,7 +15,7 @@ const TYPES: { id: string; label: string; hint: string }[] = [
 
 export default function NewGuideTypePicker() {
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
+    <div className="device-column">
       <NavBar
         sticky
         left={

@@ -15,7 +15,7 @@ export default async function NewGuideDetailsPage({ params }: PageProps) {
   if (!VALID_TYPES.includes(type as GuideType)) notFound();
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bg">
+    <div className="device-column">
       <NavBar
         sticky
         left={

@@ -49,6 +49,9 @@ module.exports = {
         "banner-icon": "#C8A05C",
         time: "#9B8B5A",
         "on-accent": "#FFFFFF",
+        // Used as the body background outside the centered "device" column
+        // on desktop. Lifted from docs/design-handoff/design-canvas.jsx.
+        deck: "#F0EEE9",
       },
       fontFamily: {
         // Serif is the brand. 99% of UI text uses it. Sans is opt-in only,
