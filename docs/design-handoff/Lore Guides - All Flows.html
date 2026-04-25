@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Lore Guides · All flows</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    html, body { margin: 0; padding: 0; background: #EFEAE1; font-family: Georgia, 'Times New Roman', serif; }
+    * { box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: #D0C8BE; border-radius: 4px; }
+  </style>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="tokens.jsx"></script>
+  <script type="text/babel" src="primitives.jsx"></script>
+  <script type="text/babel" src="screens-author.jsx"></script>
+  <script type="text/babel" src="screens-recipient.jsx"></script>
+  <script type="text/babel" src="screens-compare.jsx"></script>
+  <script type="text/babel" src="screens-flows.jsx"></script>
+  <script type="text/babel" src="screens-places.jsx"></script>
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+
+  <script type="text/babel">
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "taxonomy": "dual",
+      "pinStyle": "waymark",
+      "coverBehavior": "sticky",
+      "draftsSurface": "bottom",
+      "showCompare": true
+    }/*EDITMODE-END*/;
+
+    function App() {
+      const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+      // Intro blurb — designer's notes panel
+      const Intro = () => (
+        <div style={{ maxWidth: 760, margin: "56px auto 8px", padding: "0 32px", color: C.ink }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+            <Waymark size={18} color={C.accent}/>
+            <span style={{ fontFamily: serif, fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: C.faint }}>Lore Guides · Flow 6 · Refresh pass</span>
+          </div>
+          <h1 style={{ fontFamily: serif, fontSize: 44, fontWeight: 400, letterSpacing: "-0.015em", margin: "0 0 14px", lineHeight: 1.05 }}>All flows, one canvas.</h1>
+          <p style={{ fontFamily: serif, fontSize: 16, fontStyle: "italic", color: C.inkMuted, lineHeight: 1.65, maxWidth: 640, margin: "0 0 18px" }}>
+            Places are the atom. Guides are curated views over them — cities, regions, trips, or themes. A place can live in many guides, or in none. The shoebox is called <span style={{ color: C.ink, fontStyle: "normal" }}>My Places</span>, and quick capture lives one tap from the home screen.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px 28px", marginTop: 22, fontFamily: serif, fontSize: 13, color: C.inkMuted, lineHeight: 1.55 }}>
+            {[
+              ["Taxonomy", "Time-of-day primary (Morning → Night + Day Trip)"],
+              ["Cover", "Scrolls away, slim sticky header takes over"],
+              ["Drafts", "Banner → modal sheet, nothing at the bottom"],
+              ["Time-sensitive", "Clock glyph + warm ink, inline with metadata"],
+              ["Day trip", "Bordered pill, never mixed with time buckets"],
+              ["Map pins", "The Waymark, numbered when active"],
+            ].map(([k,v]) => (
+              <div key={k} style={{ display: "flex", gap: 10, padding: "6px 0", borderTop: `1px solid ${C.border}` }}>
+                <span style={{ fontFamily: serif, fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: C.accent, minWidth: 120 }}>{k}</span>
+                <span>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+      return (
+        <>
+          <Intro/>
+
+          <DesignCanvas>
+            <DCSection id="places-model" title="0 · Places-first model" subtitle="The shape shift. Guides are curated views over your places, not containers. Places can be unfiled. Guides can be cities, regions, trips, or themes.">
+              <DCArtboard id="pm1" label="Home · My Places (default tab)" width={410} height={852}><Screen_Home_V2/></DCArtboard>
+              <DCArtboard id="pm1g" label="Home · Guides tab" width={410} height={852}><Screen_Home_V2_GuidesTab/></DCArtboard>
+              <DCArtboard id="pm2" label="My Places · all saved (deep-dive)" width={410} height={852}><Screen_MyPlaces_All/></DCArtboard>
+              <DCArtboard id="pm3" label="My Places · unfiled filter" width={410} height={852}><Screen_MyPlaces_Unfiled/></DCArtboard>
+              <DCArtboard id="pm3m" label="My Places · world map" width={410} height={852}><Screen_MyPlaces_Map/></DCArtboard>
+              <DCArtboard id="pm3p" label="My Places · map · place peek" width={410} height={852}><Screen_MyPlaces_Map_PlacePeek/></DCArtboard>
+              <DCArtboard id="pm4" label="Place · unfiled, prompts to file" width={410} height={852}><Screen_MyPlaces_Detail/></DCArtboard>
+              <DCArtboard id="pm5" label="Capture · 5-second sheet" width={410} height={852}><Screen_Capture_Sheet/></DCArtboard>
+              <DCArtboard id="pm6" label="Capture · file in guide (picker)" width={410} height={852}><Screen_Capture_GuidePicker/></DCArtboard>
+              <DCArtboard id="pm7" label="New guide · pick shape" width={410} height={852}><Screen_NewGuide_V2_TypePicker/></DCArtboard>
+              <DCArtboard id="pm8" label="New guide · theme" width={410} height={852}><Screen_NewGuide_V2_Theme/></DCArtboard>
+              <DCArtboard id="pm9" label="Home · empty (first run)" width={410} height={852}><Screen_Home_Empty/></DCArtboard>
+              <DCArtboard id="pm10" label="Onboarding 1.4′ · first place" width={410} height={852}><Screen_OnbV2_FirstPlace/></DCArtboard>
+            </DCSection>
+
+            <DCSection id="onb" title="1 · Onboarding" subtitle="First-run. The Waymark and invite-only positioning establish tone before the product does anything else.">
+              <DCArtboard id="o1" label="1.1 · Welcome" width={410} height={832}><Screen_Onb_Welcome/></DCArtboard>
+              <DCArtboard id="o2" label="1.2 · Invite-only" width={410} height={832}><Screen_Onb_Invite/></DCArtboard>
+              <DCArtboard id="o3" label="1.3 · Your name" width={410} height={832}><Screen_Onb_Name/></DCArtboard>
+              <DCArtboard id="o4" label="1.4 · First city" width={410} height={832}><Screen_Onb_FirstCity/></DCArtboard>
+            </DCSection>
+
+            <DCSection id="home" title="2 · Home (legacy — pre-places-first)" subtitle="The original 'My guides' shelf. Superseded by the Places-first home above — kept for reference. Tab order updated to My places → My guides → Shared.">
+              <DCArtboard id="h1" label="2.1 · Legacy home · My places tab" width={410} height={832}><Screen_Home/></DCArtboard>
+            </DCSection>
+
+            <DCSection id="new" title="4 · Start a new guide" subtitle="Before places. Establish voice with relationship + when + intro.">
+              <DCArtboard id="n1" label="4.1 · New guide intro" width={410} height={832}><Screen_NewGuide/></DCArtboard>
+            </DCSection>
+
+            <DCSection id="add" title="3 · Add a place" subtitle="Search → annotate. Dual taxonomy applied (best time + type).">
+              <DCArtboard id="ap1" label="3.1 · Search" width={410} height={832}><Screen_AddPlace_Search/></DCArtboard>
+              <DCArtboard id="ap2" label="3.2 · Note + category" width={410} height={832}><Screen_AddPlace_Note/></DCArtboard>
+            </DCSection>
+
+            <DCSection id="import" title="5 · Import from Google Maps" subtitle="The fast on-ramp. Paste → review → annotate one by one.">
+              <DCArtboard id="i1" label="5.1 · Paste link" width={410} height={832}><Screen_Import_Paste/></DCArtboard>
+              <DCArtboard id="i2" label="5.2 · Review found places" width={410} height={832}><Screen_Import_Review/></DCArtboard>
+              <DCArtboard id="i3" label="5.3 · Annotate drafts" width={410} height={832}><Screen_Import_Annotate/></DCArtboard>
+            </DCSection>
+
+            <DCSection id="edit" title="9 · Editing" subtitle="Full place edit with photos, vibe, note, flags. Reorder grouped by time.">
+              <DCArtboard id="e1" label="9.1 · Edit place" width={410} height={832}><Screen_Edit_Place/></DCArtboard>
+              <DCArtboard id="e2" label="9.2 · Reorder by time" width={410} height={832}><Screen_Edit_Reorder/></DCArtboard>
+            </DCSection>
+
+            <DCSection id="author" title="6 · Author view" subtitle="Justin, logged in, editing his own guide. Six states.">
+              <DCArtboard id="a1" label="6.1 · Cover + top of list" width={410} height={832}>
+                <Screen_Cover taxonomy={t.taxonomy}/>
+              </DCArtboard>
+              <DCArtboard id="a2" label="6.2 · List scrolled · slim header" width={410} height={832}>
+                <Screen_ListScrolled taxonomy={t.taxonomy}/>
+              </DCArtboard>
+              <DCArtboard id="a3" label="6.3 · Place detail · editable note" width={410} height={832}>
+                <Screen_PlaceDetail/>
+              </DCArtboard>
+              <DCArtboard id="a4" label="6.4 · Map view · Waymark pins" width={410} height={832}>
+                <Screen_MapView/>
+              </DCArtboard>
+              <DCArtboard id="a5" label="6.5 · Drafts sheet" width={410} height={832}>
+                <Screen_DraftsSheet/>
+              </DCArtboard>
+              <DCArtboard id="a6" label="6.6 · Filtered by Evening" width={410} height={832}>
+                <Screen_Filtered/>
+              </DCArtboard>
+            </DCSection>
+
+            <DCSection id="recipient" title="Recipient view" subtitle="Non-user, mobile web. Lightweight chrome, save-to-keep CTAs, read-only notes.">
+              <DCArtboard id="r1" label="7.1 · Cover · save guide" width={410} height={832}>
+                <Screen_RecipientCover/>
+              </DCArtboard>
+              <DCArtboard id="r2" label="7.2 · List · saving places" width={410} height={832}>
+                <Screen_RecipientList/>
+              </DCArtboard>
+              <DCArtboard id="r3" label="7.3 · Place · author's note" width={410} height={832}>
+                <Screen_RecipientDetail/>
+              </DCArtboard>
+              <DCArtboard id="r4" label="7.4 · Bottom · keep-this-guide CTA" width={410} height={832}>
+                <Screen_RecipientBottomCTA/>
+              </DCArtboard>
+            </DCSection>
+
+            {t.showCompare && (
+              <DCSection id="compare-cover" title="Before → after · Cover behavior" subtitle="Original kept the cover sticky. The refresh lets it scroll and replaces it with a slim header carrying the filters.">
+                <DCArtboard id="old1" label="Before · cover sticky" width={410} height={660}>
+                  <OldCoverSticky/>
+                </DCArtboard>
+                <DCArtboard id="new1" label="After · cover collapses" width={410} height={660}>
+                  <NewCoverCollapse/>
+                </DCArtboard>
+              </DCSection>
+            )}
+
+            {t.showCompare && (
+              <DCSection id="compare-drafts" title="Before → after · Drafts surface" subtitle="Original parked drafts in a bottom section where they quietly accumulated. Now they live in a one-line banner that opens a focused modal.">
+                <DCArtboard id="old2" label="Before · drafts at bottom" width={410} height={660}>
+                  <OldDraftsBottom/>
+                </DCArtboard>
+                <DCArtboard id="new2" label="After · banner → modal sheet" width={410} height={660}>
+                  <NewDraftsSheet/>
+                </DCArtboard>
+              </DCSection>
+            )}
+
+            {t.showCompare && (
+              <DCSection id="compare-taxonomy" title="Before → after · Primary taxonomy" subtitle="Original grouped by Eat/Drink/See/Do. The refresh leads with time of day — closer to how people actually plan a day in a city. Toggle the Tweak to compare on the main screens.">
+                <DCArtboard id="old3" label="Before · Eat / Drink / See / Do" width={410} height={660}>
+                  <OldTypeTaxonomy/>
+                </DCArtboard>
+                <DCArtboard id="new3" label="After · Morning → Night + Day Trip" width={410} height={660}>
+                  <NewTimeTaxonomy/>
+                </DCArtboard>
+              </DCSection>
+            )}
+          </DesignCanvas>
+
+          <TweaksPanel title="Tweaks · contested calls">
+            <TweakSection label="Taxonomy"/>
+            <TweakRadio label="Grouping" value={t.taxonomy}
+              options={["time", "type", "dual"]}
+              onChange={(v) => setTweak("taxonomy", v)}/>
+            <p style={{ fontFamily: serif, fontSize: 11, color: "#9C8E7C", fontStyle: "italic", margin: "4px 12px 10px", lineHeight: 1.4 }}>
+              Time = Morning / Afternoon / Evening / Night / Day Trip. Type = Eat / Drink / See / Do. Dual shows both.
+            </p>
+
+            <TweakSection label="Cover"/>
+            <TweakRadio label="On scroll" value={t.coverBehavior}
+              options={["collapse", "sticky"]}
+              onChange={(v) => setTweak("coverBehavior", v)}/>
+
+            <TweakSection label="Drafts"/>
+            <TweakRadio label="Surface" value={t.draftsSurface}
+              options={["modal", "bottom"]}
+              onChange={(v) => setTweak("draftsSurface", v)}/>
+
+            <TweakSection label="Map pins"/>
+            <TweakRadio label="Style" value={t.pinStyle}
+              options={["waymark", "numbered"]}
+              onChange={(v) => setTweak("pinStyle", v)}/>
+
+            <TweakSection label="Canvas"/>
+            <TweakToggle label="Show before/after" value={t.showCompare}
+              onChange={(v) => setTweak("showCompare", v)}/>
+          </TweaksPanel>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+  </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Local env (Next.js + Supabase)
+.env
+.env.local
+.env.*.local
+
+# Per-machine Claude Code config
+.claude/settings.local.json
+
+# Dependencies
+node_modules
+
+# Next.js build output
+.next
+out
+next-env.d.ts
+
+# TypeScript
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
