@@ -13,6 +13,10 @@ type PlaceUpdate = Database["public"]["Tables"]["places"]["Update"];
 
 export interface SavePlaceFormState {
   error: string | null;
+  /** Set on a successful add-place. Lets the client chain photo
+   *  uploads against the new place before navigating. */
+  placeId?: string;
+  guideSlug?: string;
 }
 
 const VALID_BEST_TIMES = new Set<string>(BEST_TIMES);
@@ -102,7 +106,9 @@ export async function addPlaceToGuide(
 
   revalidatePath(`/guides/${guide.slug}`);
   revalidatePath("/home");
-  redirect(`/guides/${guide.slug}`);
+  // Don't redirect — return the new id so the caller can attach any
+  // staged photos before navigating to the guide.
+  return { error: null, placeId: place.id, guideSlug: guide.slug };
 }
 
 // ─── Quick capture (FAB sheet) ──────────────────────────────────────────

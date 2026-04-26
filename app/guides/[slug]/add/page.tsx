@@ -37,7 +37,7 @@ export default async function AddPlacePage({ params }: PageProps) {
           </span>
         }
       />
-      <AddPlaceFlow guideId={guide.id} />
+      <AddPlaceFlow guideId={guide.id} userId={profile.id} />
     </div>
   );
 }
