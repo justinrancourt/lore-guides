@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useActionState } from "react";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { TimeSensitiveFlag } from "@/components/primitives/TimeSensitiveFlag";
 import { PhotoBlock } from "@/components/primitives/PhotoBlock";
 import { placeholderColor } from "@/lib/format";
 import type { PlaceWithGuidesAndPhotos } from "@/lib/db/places";
+import {
+  toggleSavePlace,
+  type SavePlaceFormState,
+} from "@/lib/actions/saved-places";
 import { MapPanel, type MapPin } from "./MapPanel";
 
 interface RecipientPlaceDetailProps {
@@ -18,6 +22,8 @@ interface RecipientPlaceDetailProps {
   /** This place's 1-based position in the guide. */
   index: number;
   totalPlaces: number;
+  /** Server-resolved initial save state for the current user. */
+  initiallySaved: boolean;
 }
 
 export function RecipientPlaceDetail({
@@ -28,8 +34,14 @@ export function RecipientPlaceDetail({
   siblings,
   index,
   totalPlaces,
+  initiallySaved,
 }: RecipientPlaceDetailProps) {
-  const [saved, setSaved] = useState(false);
+  const action = toggleSavePlace.bind(null, guideSlug, place.id);
+  const [state, dispatch, pending] = useActionState<SavePlaceFormState, FormData>(
+    action,
+    { error: null, saved: initiallySaved },
+  );
+  const saved = state.saved ?? initiallySaved;
   const cover = place.photos[0];
 
   // The mini-map renders just this one pin so the recipient can orient
@@ -154,20 +166,27 @@ export function RecipientPlaceDetail({
             Get directions
           </a>
         )}
-        <button
-          type="button"
-          onClick={() => setSaved((v) => !v)}
-          className="inline-flex items-center gap-1.5 border border-border-bold bg-transparent px-4 py-2.5 font-serif text-[11px] uppercase text-ink"
-          style={{ letterSpacing: "0.06em" }}
-        >
-          <Icon
-            path={IconPath.bookmark}
-            size={11}
-            color={saved ? "#C17C4E" : "currentColor"}
-            fill={saved ? "#C17C4E" : "none"}
-          />
-          {saved ? "Saved" : "Save place"}
-        </button>
+        <form action={dispatch} className="inline-block">
+          <button
+            type="submit"
+            disabled={pending}
+            className="inline-flex items-center gap-1.5 border border-border-bold bg-transparent px-4 py-2.5 font-serif text-[11px] uppercase text-ink disabled:opacity-50"
+            style={{ letterSpacing: "0.06em" }}
+          >
+            <Icon
+              path={IconPath.bookmark}
+              size={11}
+              color={saved ? "#C17C4E" : "currentColor"}
+              fill={saved ? "#C17C4E" : "none"}
+            />
+            {pending ? "Saving…" : saved ? "Saved" : "Save place"}
+          </button>
+        </form>
+        {state.error && (
+          <p className="m-0 mt-2 w-full font-serif italic text-[12px] text-accent">
+            {state.error}
+          </p>
+        )}
       </div>
     </div>
   );

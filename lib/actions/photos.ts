@@ -14,6 +14,12 @@ export interface AttachPhotoInput {
 
 // Insert a place_photos row pointing at a file the browser already
 // uploaded to Storage. Sort order is appended to the end of the strip.
+//
+// If the row insert fails after a successful Storage upload (DB error,
+// RLS, transient), we'd be left with an orphan blob in Storage with no
+// row pointing at it. We do a best-effort delete in that case so we
+// don't accumulate dead bytes — the original error is still thrown so
+// the caller can surface it.
 export async function attachPhoto({
   placeId,
   storagePath,
@@ -24,15 +30,19 @@ export async function attachPhoto({
 
   const supabase = await createClient();
 
-  // Verify the place is theirs (RLS would also block, but we'd rather
-  // fail loudly here than leave an orphan in Storage).
+  // Verify the place is theirs. RLS would also block, but failing
+  // loudly here lets us clean up the just-uploaded blob before the
+  // ownership check denies the insert.
   const { data: place } = await supabase
     .from("places")
     .select("id")
     .eq("id", placeId)
     .eq("created_by", profile.id)
     .maybeSingle();
-  if (!place) throw new Error("That place isn't yours.");
+  if (!place) {
+    await supabase.storage.from(BUCKET).remove([storagePath]);
+    throw new Error("That place isn't yours.");
+  }
 
   const { count } = await supabase
     .from("place_photos")
@@ -45,7 +55,10 @@ export async function attachPhoto({
     caption: caption ?? null,
     sort_order: count ?? 0,
   });
-  if (error) throw error;
+  if (error) {
+    await supabase.storage.from(BUCKET).remove([storagePath]);
+    throw error;
+  }
 
   revalidatePath(`/places/${placeId}`);
   revalidatePath(`/places/${placeId}/edit`);
@@ -107,11 +120,16 @@ export async function setCoverPhoto(
     ...photos.filter((p) => p.id !== photoId),
   ].filter((p): p is NonNullable<typeof p> => p !== undefined);
 
+  // PostgREST has no native bulk update with different values per row,
+  // so loop. Throw on the first failure rather than silently swallowing
+  // — matches reorderPlacesInGuide. Worst case the strip is partly
+  // reordered; the user retries and the action is idempotent.
   for (let i = 0; i < reordered.length; i++) {
-    await supabase
+    const { error: updateErr } = await supabase
       .from("place_photos")
       .update({ sort_order: i })
       .eq("id", reordered[i].id);
+    if (updateErr) throw updateErr;
   }
 
   revalidatePath(`/places/${placeId}/edit`);

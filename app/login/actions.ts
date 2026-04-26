@@ -1,8 +1,8 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { siteUrl } from "@/lib/site-url";
 
 export interface AuthFormState {
   error: string | null;
@@ -15,15 +15,6 @@ function emailFrom(formData: FormData): string | null {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed : null;
 }
 
-async function originUrl(): Promise<string> {
-  const h = await headers();
-  // x-forwarded-host honors Vercel's preview/prod hostname; falls back to
-  // the local Host header during dev.
-  const host = h.get("x-forwarded-host") ?? h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  return `${proto}://${host}`;
-}
-
 export async function sendLoginLink(
   _prev: AuthFormState,
   formData: FormData,
@@ -33,7 +24,7 @@ export async function sendLoginLink(
 
   const next = (formData.get("next") as string | null) ?? "/home";
   const supabase = await createClient();
-  const origin = await originUrl();
+  const origin = await siteUrl();
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
@@ -66,7 +57,7 @@ export async function sendSignupLink(
 
   const next = (formData.get("next") as string | null) ?? "/home";
   const supabase = await createClient();
-  const origin = await originUrl();
+  const origin = await siteUrl();
 
   const { error } = await supabase.auth.signInWithOtp({
     email,

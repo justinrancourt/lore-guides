@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import type { GuideRow } from "@/lib/db/guides";
 import type { PlaceWithGuidesAndPhotos } from "@/lib/db/places";
 import { MapPanel, type MapPin } from "@/components/recipient/MapPanel";
 import { PublishControl } from "@/components/guide/PublishControl";
+import { siteUrl } from "@/lib/site-url";
 
 interface GuideDetailPanelProps {
   guide: GuideRow;
@@ -31,10 +31,7 @@ export async function GuideDetailPanel({ guide, places }: GuideDetailPanelProps)
     (a, b) => b[1] - a[1],
   );
 
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "lore.guides";
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const publicUrl = `${proto}://${host}/g/${guide.slug}`;
+  const publicUrl = `${await siteUrl()}/g/${guide.slug}`;
 
   return (
     <div className="flex flex-col gap-6 px-6 py-7">

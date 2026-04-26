@@ -13,9 +13,11 @@ interface RecipientLandingShellProps {
   guide: GuideRow;
   authorName: string;
   places: PlaceWithGuidesAndPhotos[];
-  /** True if the current user already has this guide in saved_guides.
-   *  Drives the Save button's initial label. */
+  /** True if the current user already has this guide in saved_guides. */
   initiallySaved: boolean;
+  /** place_ids the current user has already saved within this guide.
+   *  Per-row bookmark state initializes from this. */
+  initialSavedPlaceIds: Set<string>;
 }
 
 // Top-level orchestrator for /g/[slug]. Owns the active-place state so
@@ -26,6 +28,7 @@ export function RecipientLandingShell({
   authorName,
   places,
   initiallySaved,
+  initialSavedPlaceIds,
 }: RecipientLandingShellProps) {
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
 
@@ -45,8 +48,10 @@ export function RecipientLandingShell({
       />
       <SaveGuideButton slug={guide.slug} initiallySaved={initiallySaved} />
       <RecipientGuideContent
+        guideSlug={guide.slug}
         authorName={authorName}
         places={places}
+        initialSavedPlaceIds={initialSavedPlaceIds}
         activePlaceId={activePlaceId}
         onActiveChange={setActivePlaceId}
       />

@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/db.types";
+import { signStoragePaths } from "./storage";
 
 export type GuideRow = Database["public"]["Tables"]["guides"]["Row"];
 
@@ -11,9 +12,6 @@ export interface GuideWithCount extends GuideRow {
   // a photo. null when nothing is uploaded — callers fall back to color.
   cover_url: string | null;
 }
-
-const PHOTO_BUCKET = "place-photos";
-const PHOTO_URL_TTL_SECONDS = 60 * 60;
 
 export async function listGuidesForUser(
   userId: string,
@@ -55,21 +53,12 @@ export async function listGuidesForUser(
     };
   });
 
-  const coverPaths = enriched
-    .map((e) => e._coverPath)
-    .filter((p): p is string => Boolean(p));
-
-  let urlByPath = new Map<string, string>();
-  if (coverPaths.length > 0) {
-    const { data: signed } = await supabase.storage
-      .from(PHOTO_BUCKET)
-      .createSignedUrls(coverPaths, PHOTO_URL_TTL_SECONDS);
-    urlByPath = new Map(
-      (signed ?? []).flatMap((s) =>
-        s.signedUrl && s.path ? [[s.path, s.signedUrl] as const] : [],
-      ),
-    );
-  }
+  const urlByPath = await signStoragePaths(
+    supabase,
+    enriched
+      .map((e) => e._coverPath)
+      .filter((p): p is string => Boolean(p)),
+  );
 
   return enriched.map(({ _coverPath, ...g }) => ({
     ...g,

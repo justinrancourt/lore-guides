@@ -34,7 +34,7 @@ export function FilterBar<T extends string>({
                 "shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-0 py-0.5 font-serif text-[11px] uppercase",
                 active
                   ? "text-ink border-b border-ink"
-                  : "text-[#C0B8B0] border-b border-transparent",
+                  : "text-faint border-b border-transparent",
               )}
               style={{ letterSpacing: "0.12em" }}
             >

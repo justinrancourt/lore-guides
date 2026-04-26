@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RecipientNav } from "@/components/recipient/RecipientNav";
 import { RecipientPlaceDetail } from "@/components/recipient/RecipientPlaceDetail";
+import { currentProfile } from "@/lib/auth";
 import { publicGuideBySlug } from "@/lib/db/guides";
-import { listPlacesInGuide, placeInPublicGuide } from "@/lib/db/places";
+import { placeInPublicGuide } from "@/lib/db/places";
+import { isPlaceSavedByUser } from "@/lib/db/saved-places";
 
 interface PageProps {
   params: Promise<{ slug: string; id: string }>;
@@ -34,17 +36,19 @@ export async function generateMetadata({
 
 export default async function RecipientPlacePage({ params }: PageProps) {
   const { slug, id } = await params;
+
+  // placeInPublicGuide returns the full guide list + the place's index,
+  // so we don't need a second listPlacesInGuide call.
   const result = await placeInPublicGuide(slug, id);
   if (!result) notFound();
 
   const guide = await publicGuideBySlug(slug);
   if (!guide) notFound();
 
-  // Compute the place's 1-based position by reading the full guide list.
-  // Cheap because publicGuideBySlug already cached the row, and we need
-  // siblings anyway (we already have them via placeInPublicGuide).
-  const all = await listPlacesInGuide(guide.id);
-  const index = all.findIndex((p) => p.id === id) + 1;
+  const profile = await currentProfile();
+  const initiallySaved = profile
+    ? await isPlaceSavedByUser(profile.id, id)
+    : false;
 
   return (
     <div className="min-h-screen bg-bg">
@@ -55,8 +59,9 @@ export default async function RecipientPlacePage({ params }: PageProps) {
         authorName={guide.author_name}
         place={result.place}
         siblings={result.siblings}
-        index={index}
-        totalPlaces={all.length}
+        index={result.index + 1}
+        totalPlaces={result.all.length}
+        initiallySaved={initiallySaved}
       />
     </div>
   );

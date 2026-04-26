@@ -6,7 +6,7 @@ import { CaptureProvider } from "@/components/capture/CaptureProvider";
 import { currentProfile } from "@/lib/auth";
 import { listGuidesForUser } from "@/lib/db/guides";
 import { listSavedGuidesForUser } from "@/lib/db/saved-guides";
-import { listPlacesForUser } from "@/lib/db/places";
+import { countPlacesForUser } from "@/lib/db/places";
 
 interface AuthorShellProps {
   /** Center column content. */
@@ -29,10 +29,12 @@ export async function AuthorShell({ children, rightPanel }: AuthorShellProps) {
   if (!profile) redirect("/login");
 
   // Sidebar data is the same on every author route — fetch in parallel.
-  const [guides, sharedGuides, places] = await Promise.all([
+  // The place count is a head-only count (not the full list with signed
+  // URLs) since the sidebar only displays the number.
+  const [guides, sharedGuides, totalPlaces] = await Promise.all([
     listGuidesForUser(profile.id),
     listSavedGuidesForUser(profile.id),
-    listPlacesForUser(profile.id),
+    countPlacesForUser(profile.id),
   ]);
 
   return (
@@ -45,7 +47,7 @@ export async function AuthorShell({ children, rightPanel }: AuthorShellProps) {
         <AuthorSidebar
           guides={guides}
           sharedGuides={sharedGuides}
-          totalPlaces={places.length}
+          totalPlaces={totalPlaces}
           profile={{
             display_name: profile.display_name,
             avatar_url: profile.avatar_url,

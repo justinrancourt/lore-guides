@@ -6,6 +6,7 @@ import { currentProfile } from "@/lib/auth";
 import { publicGuideBySlug } from "@/lib/db/guides";
 import { listPlacesInGuide } from "@/lib/db/places";
 import { isGuideSavedByUser } from "@/lib/db/saved-guides";
+import { listSavedPlaceIds } from "@/lib/db/saved-places";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -47,11 +48,16 @@ export default async function RecipientGuidePage({ params }: PageProps) {
   const places = await listPlacesInGuide(guide.id);
 
   // Read save state for the signed-in user (if any). Recipients without
-  // an account get `false` and the Save button redirects them to signup.
+  // an account get `false` everywhere and any Save button redirects
+  // them to signup.
   const profile = await currentProfile();
-  const initiallySaved = profile
-    ? await isGuideSavedByUser(profile.id, guide.id)
-    : false;
+  const [initiallySaved, initialSavedPlaceIds] = await Promise.all([
+    profile ? isGuideSavedByUser(profile.id, guide.id) : Promise.resolve(false),
+    listSavedPlaceIds(
+      profile?.id ?? null,
+      places.map((p) => p.id),
+    ),
+  ]);
 
   // Subtle metadata shown on the right of the desktop nav (italic muted,
   // lg+ only) — keeps the mobile nav clean.
@@ -70,6 +76,7 @@ export default async function RecipientGuidePage({ params }: PageProps) {
         authorName={guide.author_name}
         places={places}
         initiallySaved={initiallySaved}
+        initialSavedPlaceIds={initialSavedPlaceIds}
       />
     </div>
   );

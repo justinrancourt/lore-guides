@@ -45,7 +45,7 @@ export function Cover({ guide, authorName, placeCount, compact }: CoverProps) {
         <div className="mt-[22px] flex flex-wrap justify-center font-serif text-[12px] text-faint">
           {meta.map((t, i) => (
             <span key={t}>
-              {i > 0 && <span className="mx-2.5 text-[#DDD7CE]">·</span>}
+              {i > 0 && <span className="mx-2.5 text-border-bold">·</span>}
               {t}
             </span>
           ))}

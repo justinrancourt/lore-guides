@@ -42,22 +42,24 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // getUser() makes a network call to verify the JWT — required for
-  // authorization decisions per @supabase/ssr docs (don't trust getSession).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() validates the JWT locally (or via the project's JWKS
+  // endpoint) — no per-request network call to the Auth server, which
+  // matters because the proxy runs on every navigation. The presence
+  // of valid claims is sufficient for the gating decision; routes that
+  // need a fresh user record call getUser() themselves.
+  const { data } = await supabase.auth.getClaims();
+  const isAuthed = data?.claims?.sub != null;
 
   const path = request.nextUrl.pathname;
 
-  if (!user && !isPublic(path)) {
+  if (!isAuthed && !isPublic(path)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 
-  if (user && (path === "/login" || path === "/signup")) {
+  if (isAuthed && (path === "/login" || path === "/signup")) {
     const url = request.nextUrl.clone();
     url.pathname = "/home";
     return NextResponse.redirect(url);

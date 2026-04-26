@@ -1,18 +1,26 @@
 "use client";
 
+import { useActionState } from "react";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { TimeSensitiveFlag } from "@/components/primitives/TimeSensitiveFlag";
 import { PhotoBlock } from "@/components/primitives/PhotoBlock";
 import { cn } from "@/lib/cn";
 import { placeholderColor } from "@/lib/format";
 import type { PlaceWithGuidesAndPhotos } from "@/lib/db/places";
+import {
+  toggleSavePlace,
+  type SavePlaceFormState,
+} from "@/lib/actions/saved-places";
 
 interface RecipientPlaceRowProps {
   place: PlaceWithGuidesAndPhotos;
   index: number;
   authorName: string;
-  saved: boolean;
-  onToggleSaved: () => void;
+  /** Slug of the public guide we're browsing — needed by the toggle
+   *  action to verify the place is reachable here. */
+  guideSlug: string;
+  /** Server-side initial save state. */
+  initiallySaved: boolean;
   /** Active = expanded + map pin highlighted. Single source of truth
    *  lives in the parent (RecipientLandingShell) so the map and list
    *  stay in sync without duplicated local state. */
@@ -25,13 +33,20 @@ export function RecipientPlaceRow({
   place,
   index,
   authorName,
-  saved,
-  onToggleSaved,
+  guideSlug,
+  initiallySaved,
   isActive,
   onToggleActive,
 }: RecipientPlaceRowProps) {
   const ordinal = String(index).padStart(2, "0");
   const cover = place.photos[0];
+
+  const action = toggleSavePlace.bind(null, guideSlug, place.id);
+  const [state, dispatch, pending] = useActionState<SavePlaceFormState, FormData>(
+    action,
+    { error: null, saved: initiallySaved },
+  );
+  const saved = state.saved ?? initiallySaved;
 
   const handleExpand = () => onToggleActive?.(!isActive);
 
@@ -39,7 +54,7 @@ export function RecipientPlaceRow({
     <div
       className={cn(
         "flex items-baseline gap-4 border-t border-border py-5 transition-colors",
-        isActive && "bg-[rgba(193,124,78,0.05)]",
+        isActive && "bg-accent-soft/20",
       )}
     >
       <span
@@ -102,23 +117,22 @@ export function RecipientPlaceRow({
           </div>
         )}
       </button>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggleSaved();
-        }}
-        aria-label={saved ? "Saved" : "Save place"}
-        className="flex h-8 w-8 shrink-0 items-center justify-center self-start border-0 bg-transparent"
-      >
-        <Icon
-          path={IconPath.bookmark}
-          size={18}
-          color={saved ? "#C17C4E" : "#9C8E7C"}
-          fill={saved ? "#C17C4E" : "none"}
-          stroke={1.5}
-        />
-      </button>
+      <form action={dispatch} onClick={(e) => e.stopPropagation()}>
+        <button
+          type="submit"
+          disabled={pending}
+          aria-label={saved ? "Saved" : "Save place"}
+          className="flex h-8 w-8 shrink-0 items-center justify-center self-start border-0 bg-transparent disabled:opacity-50"
+        >
+          <Icon
+            path={IconPath.bookmark}
+            size={18}
+            color={saved ? "#C17C4E" : "#9C8E7C"}
+            fill={saved ? "#C17C4E" : "none"}
+            stroke={1.5}
+          />
+        </button>
+      </form>
     </div>
   );
 }

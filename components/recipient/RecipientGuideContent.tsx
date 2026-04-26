@@ -10,8 +10,12 @@ const TIME_OPTIONS = ["All", ...BEST_TIMES] as const;
 type TimeFilter = (typeof TIME_OPTIONS)[number];
 
 interface RecipientGuideContentProps {
+  guideSlug: string;
   authorName: string;
   places: PlaceWithGuidesAndPhotos[];
+  /** Server-resolved set of place_ids the current user has already
+   *  saved. Each row owns its own optimistic toggle from there. */
+  initialSavedPlaceIds: Set<string>;
   /** Notify the parent of the active place (for map sync). When the
    *  parent passes activePlaceId, that pin highlights on the map. */
   activePlaceId?: string | null;
@@ -23,28 +27,20 @@ interface RecipientGuideContentProps {
 // Per the spec the recipient view filters by time only, not the
 // dual-axis used in the author guide view.
 export function RecipientGuideContent({
+  guideSlug,
   authorName,
   places,
+  initialSavedPlaceIds,
   activePlaceId,
   onActiveChange,
 }: RecipientGuideContentProps) {
   const [time, setTime] = useState<TimeFilter>("All");
-  const [saved, setSaved] = useState<Set<string>>(new Set());
 
   const visible = useMemo(
     () =>
       time === "All" ? places : places.filter((p) => p.best_time === time),
     [places, time],
   );
-
-  const toggleSaved = (id: string) => {
-    setSaved((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
 
   return (
     <>
@@ -61,7 +57,7 @@ export function RecipientGuideContent({
                   "shrink-0 cursor-pointer whitespace-nowrap border-0 bg-transparent px-0 py-2 font-serif text-[11px] uppercase",
                   active
                     ? "border-b-[1.5px] border-ink text-ink"
-                    : "border-b-[1.5px] border-transparent text-[#C0B8B0]",
+                    : "border-b-[1.5px] border-transparent text-faint",
                 )}
                 style={{ letterSpacing: "0.1em" }}
               >
@@ -84,8 +80,8 @@ export function RecipientGuideContent({
               place={p}
               index={i + 1}
               authorName={authorName}
-              saved={saved.has(p.id)}
-              onToggleSaved={() => toggleSaved(p.id)}
+              guideSlug={guideSlug}
+              initiallySaved={initialSavedPlaceIds.has(p.id)}
               isActive={activePlaceId === p.id}
               onToggleActive={(next) =>
                 onActiveChange?.(next ? p.id : null)

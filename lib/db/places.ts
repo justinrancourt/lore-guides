@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/db.types";
+import { signStoragePaths } from "./storage";
 
 export type PlaceRow = Database["public"]["Tables"]["places"]["Row"];
 export type PlacePhotoRow = Database["public"]["Tables"]["place_photos"]["Row"];
@@ -22,26 +23,17 @@ export interface PlaceWithGuidesAndPhotos extends PlaceWithGuides {
   photos: PhotoWithUrl[];
 }
 
-const PHOTO_BUCKET = "place-photos";
-const PHOTO_URL_TTL_SECONDS = 60 * 60; // 1 hour; pages re-fetch on each navigation
-
-async function signPhotos(
-  rows: PlacePhotoRow[],
-): Promise<PhotoWithUrl[]> {
-  if (rows.length === 0) return [];
+// Cheap head-only count for the sidebar — avoids fetching + signing all
+// the user's places when we only want the number. Used by AuthorShell.
+export async function countPlacesForUser(userId: string): Promise<number> {
   const supabase = await createClient();
-  const { data, error } = await supabase.storage
-    .from(PHOTO_BUCKET)
-    .createSignedUrls(
-      rows.map((r) => r.storage_path),
-      PHOTO_URL_TTL_SECONDS,
-    );
+  const { count, error } = await supabase
+    .from("places")
+    .select("id", { count: "exact", head: true })
+    .eq("created_by", userId)
+    .eq("is_draft", false);
   if (error) throw error;
-  // createSignedUrls preserves the input order; zip results back onto rows.
-  return rows.map((row, i) => ({
-    ...row,
-    url: data[i]?.signedUrl ?? "",
-  }));
+  return count ?? 0;
 }
 
 export async function listPlacesForUser(
@@ -56,8 +48,7 @@ export async function listPlacesForUser(
     .order("created_at", { ascending: false });
   if (error) throw error;
 
-  // Collect cover storage paths and batch-sign in one round trip. Each
-  // place gets at most one signed URL (the cover); other photos are
+  // Each place gets at most one signed URL (the cover); other photos are
   // fetched lazily when the place detail page renders.
   const rows = (data ?? []).map(({ guide_places, place_photos, ...p }) => {
     const coverPath = (place_photos ?? [])
@@ -70,20 +61,12 @@ export async function listPlacesForUser(
     };
   });
 
-  const coverPaths = rows
-    .map((r) => r._coverPath)
-    .filter((p): p is string => Boolean(p));
-  let urlByPath = new Map<string, string>();
-  if (coverPaths.length > 0) {
-    const { data: signed } = await supabase.storage
-      .from(PHOTO_BUCKET)
-      .createSignedUrls(coverPaths, PHOTO_URL_TTL_SECONDS);
-    urlByPath = new Map(
-      (signed ?? []).flatMap((s) =>
-        s.signedUrl && s.path ? [[s.path, s.signedUrl] as const] : [],
-      ),
-    );
-  }
+  const urlByPath = await signStoragePaths(
+    supabase,
+    rows
+      .map((r) => r._coverPath)
+      .filter((p): p is string => Boolean(p)),
+  );
 
   return rows.map(({ _coverPath, ...rest }) => ({
     ...rest,
@@ -108,18 +91,19 @@ export async function listPlacesInGuide(
     .map((row) => row.places)
     .filter((p): p is NonNullable<typeof p> => p !== null);
 
-  // Batch-sign all photo URLs across the guide in one round trip.
-  const allPhotos = rows.flatMap((p) => p.place_photos ?? []);
-  const signed = await signPhotos(
-    allPhotos.sort((a, b) => a.sort_order - b.sort_order),
+  const allPhotos = rows
+    .flatMap((p) => p.place_photos ?? [])
+    .sort((a, b) => a.sort_order - b.sort_order);
+  const urlByPath = await signStoragePaths(
+    supabase,
+    allPhotos.map((p) => p.storage_path),
   );
-  const signedById = new Map(signed.map((p) => [p.id, p]));
 
   return rows.map(({ guide_places, place_photos, ...p }) => {
-    const orderedPhotos = (place_photos ?? [])
+    const orderedPhotos: PhotoWithUrl[] = (place_photos ?? [])
+      .slice()
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map((ph) => signedById.get(ph.id)!)
-      .filter(Boolean);
+      .map((ph) => ({ ...ph, url: urlByPath.get(ph.storage_path) ?? "" }));
     return {
       ...p,
       guide_ids: (guide_places ?? []).map((gp) => gp.guide_id),
@@ -129,17 +113,18 @@ export async function listPlacesInGuide(
   });
 }
 
-// Public-guide-aware place fetch. Returns the place only if it lives
-// in the public guide identified by slug; otherwise null. Used by the
-// recipient deep-link route /g/[slug]/p/[id], which must never expose
-// places from non-public guides regardless of whether the user is signed
-// in (RLS would block anyway, but a clean null path is friendlier).
+// Public-guide-aware place fetch. Returns the place only if it lives in
+// the public guide identified by slug; otherwise null. Returns the full
+// ordered list as well so callers don't have to re-fetch siblings.
 export async function placeInPublicGuide(
   guideSlug: string,
   placeId: string,
 ): Promise<{
   place: PlaceWithGuidesAndPhotos;
   siblings: PlaceWithGuidesAndPhotos[];
+  /** All places in the guide, in display order. `place` is at `index`. */
+  all: PlaceWithGuidesAndPhotos[];
+  index: number;
 } | null> {
   const supabase = await createClient();
   const { data: guide } = await supabase
@@ -151,10 +136,11 @@ export async function placeInPublicGuide(
   if (!guide) return null;
 
   const all = await listPlacesInGuide(guide.id);
-  const place = all.find((p) => p.id === placeId);
-  if (!place) return null;
-  const siblings = all.filter((p) => p.id !== placeId);
-  return { place, siblings };
+  const index = all.findIndex((p) => p.id === placeId);
+  if (index === -1) return null;
+  const place = all[index];
+  const siblings = all.filter((_, i) => i !== index);
+  return { place, siblings, all, index };
 }
 
 export async function placeById(
@@ -169,9 +155,17 @@ export async function placeById(
   if (error) throw error;
   if (!data) return null;
   const { guide_places, place_photos, ...p } = data;
-  const photos = await signPhotos(
-    (place_photos ?? []).sort((a, b) => a.sort_order - b.sort_order),
+  const ordered = (place_photos ?? [])
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order);
+  const urlByPath = await signStoragePaths(
+    supabase,
+    ordered.map((ph) => ph.storage_path),
   );
+  const photos: PhotoWithUrl[] = ordered.map((ph) => ({
+    ...ph,
+    url: urlByPath.get(ph.storage_path) ?? "",
+  }));
   return {
     ...p,
     guide_ids: (guide_places ?? []).map((gp) => gp.guide_id),
