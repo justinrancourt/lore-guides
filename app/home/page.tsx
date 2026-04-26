@@ -1,62 +1,38 @@
-import { AppShell } from "@/components/shell/AppShell";
-import { MyPlacesList } from "@/components/place/MyPlacesList";
+import { AuthorShell } from "@/components/author/AuthorShell";
+import { AllPlacesCenter } from "@/components/author/AllPlacesCenter";
+import { AllPlacesPanel } from "@/components/author/AllPlacesPanel";
 import { EmptyHome } from "@/components/place/EmptyHome";
 import { SeedValenciaButton } from "@/components/shell/SeedValenciaButton";
-import { Waymark } from "@/components/primitives/Waymark";
-import { Icon, IconPath } from "@/components/primitives/Icon";
 import { currentProfile } from "@/lib/auth";
 import { listGuidesForUser } from "@/lib/db/guides";
 import { listPlacesForUser } from "@/lib/db/places";
 
 export default async function HomePage() {
   const profile = await currentProfile();
-  if (!profile) return null; // proxy will have redirected; defensive
+  if (!profile) return null;
 
   const [places, guides] = await Promise.all([
     listPlacesForUser(profile.id),
     listGuidesForUser(profile.id),
   ]);
 
-  const unfiled = places.filter((p) => p.guide_ids.length === 0);
   const showDevSeed = process.env.ALLOW_DEV_SEED === "true";
 
   if (places.length === 0) {
     return (
-      <AppShell>
+      <AuthorShell>
         <EmptyHome />
         {showDevSeed && <SeedValenciaButton />}
-      </AppShell>
+      </AuthorShell>
     );
   }
 
   return (
-    <AppShell>
-      <header className="px-5 sm:px-8 pt-5">
-        <h1 className="m-0 font-serif text-title text-ink">
-          Every place I&rsquo;ve saved
-        </h1>
-        <p className="m-0 mt-1 font-serif italic text-[13px] text-faint">
-          {places.length} places · {unfiled.length} unfiled
-        </p>
-      </header>
-
-      {unfiled.length > 0 && (
-        <div className="mx-5 sm:mx-8 mt-4 flex items-center gap-3 border-l-[3px] border-banner-icon bg-banner-bg px-4 py-2.5">
-          <Waymark size={14} color="#C8A05C" />
-          <div className="min-w-0 flex-1">
-            <p className="m-0 font-serif text-[13px] text-ink">
-              <span className="text-ink">{unfiled.length}</span> unfiled places
-            </p>
-            <p className="m-0 font-serif italic text-[12px] text-ink-muted">
-              File them or build a guide from them
-            </p>
-          </div>
-          <Icon path={IconPath.chevRight} size={14} color="#9C8E7C" />
-        </div>
-      )}
-
-      <MyPlacesList places={places} guides={guides} unfiledCount={unfiled.length} />
+    <AuthorShell
+      rightPanel={<AllPlacesPanel places={places} guides={guides} />}
+    >
+      <AllPlacesCenter places={places} guides={guides} />
       {showDevSeed && <SeedValenciaButton />}
-    </AppShell>
+    </AuthorShell>
   );
 }

@@ -1,16 +1,9 @@
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { NavBar } from "@/components/primitives/NavBar";
-import { Logo } from "@/components/primitives/Logo";
-import { BackBtn } from "@/components/primitives/BackBtn";
-import { GuideModeBtn } from "@/components/primitives/GuideModeBtn";
-import { Cover } from "@/components/primitives/Cover";
-import { GuideFooter } from "@/components/primitives/GuideFooter";
-import { GuidePlacesView } from "@/components/guide/GuidePlacesView";
-import { PublishControl } from "@/components/guide/PublishControl";
-import { CaptureProvider } from "@/components/capture/CaptureProvider";
-import { CaptureFab } from "@/components/shell/CaptureFab";
+import { AuthorShell } from "@/components/author/AuthorShell";
+import { GuideDetailPanel } from "@/components/author/GuideDetailPanel";
+import { CompactPlaceRow } from "@/components/author/CompactPlaceRow";
+import { Icon, IconPath } from "@/components/primitives/Icon";
 import { currentProfile } from "@/lib/auth";
 import { guideBySlug } from "@/lib/db/guides";
 import { listPlacesInGuide } from "@/lib/db/places";
@@ -29,51 +22,42 @@ export default async function AuthorGuidePage({ params }: PageProps) {
 
   const places = await listPlacesInGuide(guide.id);
 
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "lore.guides";
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const publicUrl = `${proto}://${host}/g/${guide.slug}`;
-
   return (
-    <CaptureProvider>
-      <div className="app-column">
-        <NavBar
-          left={<BackBtn label="Guides" href="/home/guides" />}
-          center={<Logo size={11} />}
-          right={<GuideModeBtn active />}
-        />
-        <Cover
-          guide={guide}
-          authorName={profile.display_name}
-          placeCount={places.length}
-        />
-        <GuidePlacesView city={guide.title} places={places} />
-        <PublishControl
-          guideId={guide.id}
-          isPublic={guide.is_public}
-          publicUrl={publicUrl}
-        />
-        <div className="flex items-center justify-center gap-3 px-5 sm:px-8 pb-4 pt-6">
-          <Link
-            href={`/guides/${guide.slug}/add`}
-            className="inline-block border border-dashed border-border-bold px-4 py-2.5 font-serif text-[12px] uppercase text-ink-muted"
-            style={{ letterSpacing: "0.14em" }}
-          >
-            + Add a place
-          </Link>
-          {places.length > 1 && (
-            <Link
-              href={`/guides/${guide.slug}/reorder`}
-              className="inline-block px-3 py-2.5 font-serif text-[12px] uppercase text-faint"
-              style={{ letterSpacing: "0.14em" }}
-            >
-              Reorder
-            </Link>
-          )}
+    <AuthorShell rightPanel={<GuideDetailPanel guide={guide} places={places} />}>
+      <header className="border-b border-border px-5 pt-6 sm:px-7">
+        <div className="flex items-center gap-2">
+          <span
+            className="h-[9px] w-[9px] rounded-circle"
+            style={{ backgroundColor: guide.color }}
+          />
+          <h1 className="m-0 font-serif text-[22px] font-normal text-ink">
+            {guide.title}
+          </h1>
         </div>
-        <GuideFooter authorName={profile.display_name} city={guide.title} />
-        <CaptureFab />
+        <p className="m-0 mb-5 mt-0.5 font-serif italic text-[12px] text-faint">
+          {places.length} {places.length === 1 ? "place" : "places"}
+          {guide.year ? ` · ${guide.year}` : ""}
+          {guide.is_public ? " · public" : " · private"}
+        </p>
+      </header>
+
+      <div className="px-5 sm:px-7">
+        {places.length === 0 ? (
+          <p className="py-12 text-center font-serif italic text-[14px] text-faint">
+            No places in this guide yet.
+          </p>
+        ) : (
+          places.map((p) => <CompactPlaceRow key={p.id} place={p} />)
+        )}
+
+        <Link
+          href={`/guides/${guide.slug}/add`}
+          className="flex items-center justify-center gap-2 py-5 font-serif text-[13px] text-faint transition-colors hover:text-ink"
+        >
+          <Icon path={IconPath.plus} size={14} color="currentColor" />
+          Add a place
+        </Link>
       </div>
-    </CaptureProvider>
+    </AuthorShell>
   );
 }

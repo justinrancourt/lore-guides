@@ -203,8 +203,100 @@ All in Georgia serif unless noted:
 
 1. **Recipient landing page** (`/g/[slug]`) with the desktop split-panel layout — this is the highest traffic page
 2. **Place detail** (`/g/[slug]/p/[id]`) with the two-column desktop layout
-3. **Tour guide mode** (`/g/[slug]/guide`) — already mobile-first, just make sure it doesn't break on desktop
-4. **OG meta tags and server-side rendering** for link previews
+3. **Author home** — three-column sidebar layout
+4. **Author guide view** — same three-column structure, guide content in center
+5. **Tour guide mode** (`/g/[slug]/guide`) — already mobile-first, just make sure it doesn't break on desktop
+6. **OG meta tags and server-side rendering** for link previews
+
+---
+
+## Author-Side Desktop Layout
+
+The author experience also runs on web (not just iOS). On desktop, it uses a **persistent three-column sidebar layout** — not a single centered column.
+
+### The Three-Column Structure
+
+```
+┌──────────┬────────────────────────┬─────────────┐
+│ Sidebar  │     Center Content     │ Right Panel  │
+│  220px   │       flex: 1          │    300px     │
+│          │                        │              │
+│ All      │  [Place list or        │ [Guide stats │
+│ places   │   guide content]       │  map, actions│
+│ ────     │                        │  categories] │
+│ Guides   │                        │              │
+│  Valencia│                        │              │
+│  S. Fla  │                        │              │
+│ ────     │                        │              │
+│ Shared   │                        │              │
+│  Tokyo   │                        │              │
+│          │                        │              │
+│ ── user ─│                        │              │
+└──────────┴────────────────────────┴─────────────┘
+```
+
+### Left Sidebar (220px, fixed)
+
+- **Logo** at top
+- **"All places"** — primary nav item, default landing view. Shows total count. Map pin icon.
+- Divider
+- **"Guides"** section header with `+` button — lists each guide with colored dot, city name, place count
+- Divider
+- **"Shared with me"** — guides others have sent you, slightly muted
+- **User avatar + name** pinned to bottom
+
+The sidebar persists across all author views. It's the global navigation.
+
+### Center Column (flex: 1)
+
+Changes based on what's selected in the sidebar:
+
+- **All Places selected**: "Every place I've saved" header, guide filter pills (All / Valencia / South Florida / Unfiled), flat place list with guide section headers when unfiltered. Place rows show: photo thumb (48px), name, neighborhood, category label, note preview (2 lines, clamped), date.
+- **Specific guide selected**: Guide name + dot header, place list scoped to that guide. Same row format but no guide badges needed.
+
+### Right Panel (300px, fixed)
+
+Also changes based on selection:
+
+- **All Places selected**: Map showing all places across guides (color-coded pins by guide), stats grid (total places, guides, with notes, with photos), "N places without notes" nudge, breakdown by guide with mini progress bars, breakdown by category.
+- **Specific guide selected**: Guide intro quote, stats (places, with notes, with photos), Share Guide + Edit Settings buttons, map preview with pins, category breakdown.
+
+### Modal Overlays
+
+These flows are **not** full-page navigations on desktop. They overlay the three-column layout as centered modals:
+
+| Flow | Modal width | Notes |
+|------|-------------|-------|
+| **Create new guide** (Flow 3) | 480px | City search + details form. Simple, focused. |
+| **Add a place** (Flow 4) | 520px | Places search → note → category → photo. Single column inside modal. |
+| **Import from Google Maps** (Flow 5) | 640px | Slightly wider for the review step which has a list/table feel. |
+| **Edit a place** (Flow 9) | 520px | Same as add, pre-filled. Photo gallery strip can scroll horizontally. |
+
+Modal behavior:
+- Semi-transparent backdrop (`rgba(0,0,0,0.3)`)
+- Vertically centered, with scroll inside modal if content overflows
+- Close via X button, Escape key, or backdrop click
+- The sidebar and content behind remain visible but non-interactive
+
+### Responsive Collapse
+
+On mobile (<640px), the three-column layout collapses:
+- Sidebar becomes a bottom tab bar (All Places / Guides / Shared) or a hamburger drawer
+- Right panel becomes a separate screen accessible via a guide header tap or info button
+- Modals become full-screen slide-up sheets (matching the existing mobile mockups)
+
+### Author-Side Design Constants
+
+| Property | Value |
+|----------|-------|
+| Sidebar width | 220px (min 200) |
+| Right panel width | 300px (min 260) |
+| Center column min-width | 360px |
+| Place row photo thumbnail | 48px square |
+| Place note line clamp | 2 lines |
+| Guide dot size | 7-9px |
+| Section label style | 9px sans-serif, uppercase, 0.12em spacing, ink-faint |
+| Modal backdrop | rgba(0,0,0,0.3) |
 
 ---
 
@@ -214,5 +306,6 @@ The interactive mockups for these screens are in the project as JSX files:
 - `lore-sharing-flow.jsx` — Flow 8, includes the mobile recipient landing (screen 8.3)
 - `lore-flow6-guide-artifact.jsx` — Flow 6, the guide artifact view
 - `lore-flow7-tour-guide.jsx` — Flow 7, tour guide mode
-- `lore-responsive-guide.jsx` — Desktop layout mockups and this spec in visual form
+- `lore-responsive-guide.jsx` — Desktop recipient layout mockups
+- `lore-author-home-v2.jsx` — Desktop author home with three-column sidebar layout
 - `lore-style-guide-v2.jsx` — Full design system reference

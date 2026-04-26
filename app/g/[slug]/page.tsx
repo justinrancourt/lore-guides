@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RecipientNav } from "@/components/recipient/RecipientNav";
 import { RecipientLandingShell } from "@/components/recipient/RecipientLandingShell";
+import { currentProfile } from "@/lib/auth";
 import { publicGuideBySlug } from "@/lib/db/guides";
 import { listPlacesInGuide } from "@/lib/db/places";
+import { isGuideSavedByUser } from "@/lib/db/saved-guides";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -44,6 +46,13 @@ export default async function RecipientGuidePage({ params }: PageProps) {
   if (!guide) notFound();
   const places = await listPlacesInGuide(guide.id);
 
+  // Read save state for the signed-in user (if any). Recipients without
+  // an account get `false` and the Save button redirects them to signup.
+  const profile = await currentProfile();
+  const initiallySaved = profile
+    ? await isGuideSavedByUser(profile.id, guide.id)
+    : false;
+
   // Subtle metadata shown on the right of the desktop nav (italic muted,
   // lg+ only) — keeps the mobile nav clean.
   const navMeta = [
@@ -60,6 +69,7 @@ export default async function RecipientGuidePage({ params }: PageProps) {
         guide={guide}
         authorName={guide.author_name}
         places={places}
+        initiallySaved={initiallySaved}
       />
     </div>
   );

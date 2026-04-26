@@ -7,11 +7,15 @@ import { MapPanel, type MapPin } from "./MapPanel";
 import { RecipientCover } from "./RecipientCover";
 import { RecipientGuideContent } from "./RecipientGuideContent";
 import { EndOfGuideCTA } from "./EndOfGuideCTA";
+import { SaveGuideButton } from "./SaveGuideButton";
 
 interface RecipientLandingShellProps {
   guide: GuideRow;
   authorName: string;
   places: PlaceWithGuidesAndPhotos[];
+  /** True if the current user already has this guide in saved_guides.
+   *  Drives the Save button's initial label. */
+  initiallySaved: boolean;
 }
 
 // Top-level orchestrator for /g/[slug]. Owns the active-place state so
@@ -21,6 +25,7 @@ export function RecipientLandingShell({
   guide,
   authorName,
   places,
+  initiallySaved,
 }: RecipientLandingShellProps) {
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
 
@@ -38,6 +43,7 @@ export function RecipientLandingShell({
         authorName={authorName}
         placeCount={places.length}
       />
+      <SaveGuideButton slug={guide.slug} initiallySaved={initiallySaved} />
       <RecipientGuideContent
         authorName={authorName}
         places={places}

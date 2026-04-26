@@ -277,6 +277,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_guides: {
+        Row: {
+          guide_id: string
+          id: string
+          saved_at: string
+          user_id: string
+        }
+        Insert: {
+          guide_id: string
+          id?: string
+          saved_at?: string
+          user_id: string
+        }
+        Update: {
+          guide_id?: string
+          id?: string
+          saved_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_guides_guide_id_fkey"
+            columns: ["guide_id"]
+            isOneToOne: false
+            referencedRelation: "guides"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_guides_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_places: {
         Row: {
           id: string
