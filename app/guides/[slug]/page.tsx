@@ -36,7 +36,7 @@ export default async function AuthorGuidePage({ params }: PageProps) {
 
   return (
     <CaptureProvider>
-      <div className="device-column">
+      <div className="app-column">
         <NavBar
           left={<BackBtn label="Guides" href="/home/guides" />}
           center={<Logo size={11} />}
@@ -53,7 +53,7 @@ export default async function AuthorGuidePage({ params }: PageProps) {
           isPublic={guide.is_public}
           publicUrl={publicUrl}
         />
-        <div className="flex items-center justify-center gap-3 px-5 pb-4 pt-6">
+        <div className="flex items-center justify-center gap-3 px-5 sm:px-8 pb-4 pt-6">
           <Link
             href={`/guides/${guide.slug}/add`}
             className="inline-block border border-dashed border-border-bold px-4 py-2.5 font-serif text-[12px] uppercase text-ink-muted"

@@ -11,10 +11,7 @@
     min-height: 100%;
     display: flex;
     flex-direction: column;
-    /* On mobile this is invisible — the column fills the viewport. On
-       desktop it shows as the canvas around the centered "device" column,
-       matching docs/design-handoff/design-canvas.jsx. */
-    background: theme("colors.deck");
+    background: theme("colors.bg");
     color: theme("colors.ink");
     font-family: theme("fontFamily.serif");
     -webkit-font-smoothing: antialiased;
@@ -28,17 +25,14 @@
 }
 
 @layer components {
-  /* The "device" column. Edge-to-edge on mobile; centered on the deck
-     canvas on desktop with a hairline to give the column definition. */
-  .device-column {
-    @apply mx-auto flex min-h-screen max-w-md flex-col bg-bg;
+  /* Page-level shells. Edge-to-edge on mobile, centered + max-width on
+     larger viewports. Two widths for the two kinds of pages we have:
+     reading content (~720px max) and forms (narrower). */
+  .app-column {
+    @apply mx-auto flex min-h-screen w-full max-w-[720px] flex-col;
   }
-  @media (min-width: 768px) {
-    .device-column {
-      box-shadow:
-        -1px 0 0 rgba(60, 50, 40, 0.06),
-        1px 0 0 rgba(60, 50, 40, 0.06);
-    }
+  .form-column {
+    @apply mx-auto flex min-h-screen w-full max-w-[560px] flex-col;
   }
 }
 

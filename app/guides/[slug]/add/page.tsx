@@ -17,7 +17,7 @@ export default async function AddPlacePage({ params }: PageProps) {
   if (!guide || guide.author_id !== profile.id) notFound();
 
   return (
-    <div className="device-column">
+    <div className="form-column">
       <NavBar
         sticky
         left={

@@ -3,7 +3,7 @@ import { Waymark } from "@/components/primitives/Waymark";
 
 export default function NotFound() {
   return (
-    <div className="device-column items-center justify-center px-5 text-center">
+    <div className="app-column items-center justify-center px-5 text-center">
       <Waymark size={28} color="#9C8E7C" />
       <h1 className="m-0 mt-5 font-serif text-title text-ink">
         That guide doesn&rsquo;t exist.

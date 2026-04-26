@@ -10,7 +10,7 @@ export function CaptureFab() {
   const { open } = useCapture();
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-6 z-30">
-      <div className="mx-auto flex max-w-md justify-end px-5">
+      <div className="mx-auto flex w-full max-w-[720px] justify-end px-5 sm:px-8">
         <button
           type="button"
           onClick={open}

@@ -22,7 +22,7 @@ export async function AppShell({
 
   return (
     <CaptureProvider>
-      <div className="device-column">
+      <div className="app-column">
         <NavBar
           left={<Logo href="/home" />}
           right={profile ? <AccountMenu name={profile.display_name} /> : null}

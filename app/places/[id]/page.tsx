@@ -27,7 +27,7 @@ export default async function PlaceDetailPage({ params }: PageProps) {
   const cover = place.photos[0];
 
   return (
-    <div className="device-column">
+    <div className="app-column">
       <NavBar
         sticky
         left={<BackBtn label="Back" href="/home" />}
@@ -50,7 +50,7 @@ export default async function PlaceDetailPage({ params }: PageProps) {
         }
       />
 
-      <article className="px-5 pb-20 pt-6">
+      <article className="px-5 sm:px-8 pb-20 pt-6">
         {place.best_time && place.type && (
           <p
             className="m-0 mb-2 font-serif text-[11px] uppercase text-faint"

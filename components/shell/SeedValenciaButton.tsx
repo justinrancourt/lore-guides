@@ -21,7 +21,7 @@ export function SeedValenciaButton() {
   };
 
   return (
-    <div className="mx-5 mt-4 border border-dashed border-border-bold bg-surface px-4 py-3 text-center">
+    <div className="mx-5 sm:mx-8 mt-4 border border-dashed border-border-bold bg-surface px-4 py-3 text-center">
       <p
         className="m-0 mb-2 font-serif text-[10px] uppercase text-faint"
         style={{ letterSpacing: "0.18em" }}

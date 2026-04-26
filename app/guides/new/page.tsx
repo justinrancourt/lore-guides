@@ -4,7 +4,7 @@ import { NewGuideForm } from "./NewGuideForm";
 
 export default function NewGuidePage() {
   return (
-    <div className="device-column">
+    <div className="form-column">
       <NavBar
         sticky
         left={

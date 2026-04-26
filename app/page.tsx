@@ -9,7 +9,7 @@ export default async function Index() {
   if (profile) redirect("/home");
 
   return (
-    <div className="device-column items-center justify-center px-5 py-10 text-center">
+    <div className="app-column items-center justify-center px-5 py-10 text-center">
       <Logo size={18} />
       <div className="mt-12">
         <Waymark size={28} color="#C17C4E" />

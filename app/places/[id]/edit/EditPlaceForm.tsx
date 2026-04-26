@@ -39,7 +39,7 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
   };
 
   return (
-    <div className="device-column">
+    <div className="form-column">
       <form action={action}>
         <NavBar
           sticky

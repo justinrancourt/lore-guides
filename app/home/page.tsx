@@ -31,7 +31,7 @@ export default async function HomePage() {
 
   return (
     <AppShell>
-      <header className="px-5 pt-5">
+      <header className="px-5 sm:px-8 pt-5">
         <h1 className="m-0 font-serif text-title text-ink">
           Every place I&rsquo;ve saved
         </h1>
@@ -41,7 +41,7 @@ export default async function HomePage() {
       </header>
 
       {unfiled.length > 0 && (
-        <div className="mx-5 mt-4 flex items-center gap-3 border-l-[3px] border-banner-icon bg-banner-bg px-4 py-2.5">
+        <div className="mx-5 sm:mx-8 mt-4 flex items-center gap-3 border-l-[3px] border-banner-icon bg-banner-bg px-4 py-2.5">
           <Waymark size={14} color="#C8A05C" />
           <div className="min-w-0 flex-1">
             <p className="m-0 font-serif text-[13px] text-ink">

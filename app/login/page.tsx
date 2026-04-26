@@ -9,7 +9,7 @@ interface PageProps {
 export default async function LoginPage({ searchParams }: PageProps) {
   const { sent, next } = await searchParams;
   return (
-    <div className="device-column items-center justify-center px-5 py-10 text-center">
+    <div className="form-column items-center justify-center px-5 py-10 text-center">
       <Logo size={16} />
       {sent ? (
         <>

@@ -30,7 +30,7 @@ export function MyPlacesList({
 
   return (
     <>
-      <div className="scrollbar-none flex gap-2 overflow-x-auto px-5 py-3">
+      <div className="scrollbar-none flex gap-2 overflow-x-auto px-5 sm:px-8 py-3">
         <FilterChip
           label="All"
           variant="solid"
@@ -53,7 +53,7 @@ export function MyPlacesList({
           subtle={unfiledCount === 0}
         />
       </div>
-      <div className="px-5">
+      <div className="px-5 sm:px-8">
         {visible.length === 0 ? (
           <p className="py-12 text-center font-serif italic text-[14px] text-faint">
             No places match this filter.

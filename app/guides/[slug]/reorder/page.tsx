@@ -20,7 +20,7 @@ export default async function ReorderPage({ params }: PageProps) {
   const places = await listPlacesInGuide(guide.id);
 
   return (
-    <div className="device-column">
+    <div className="form-column">
       <NavBar
         sticky
         left={

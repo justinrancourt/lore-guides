@@ -4,7 +4,7 @@ import { Waymark } from "@/components/primitives/Waymark";
 export default function SharedTab() {
   return (
     <AppShell>
-      <div className="flex flex-col items-center px-5 pt-20 text-center">
+      <div className="flex flex-col items-center px-5 sm:px-8 pt-20 text-center">
         <Waymark size={28} color="#C0B8B0" />
         <h1 className="m-0 mt-5 font-serif text-title text-ink">
           Nothing shared with you yet

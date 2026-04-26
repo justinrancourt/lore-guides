@@ -85,7 +85,7 @@ export function NewGuideForm() {
         </p>
       )}
 
-      <div className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 bg-bg px-5 pb-5 pt-4">
+      <div className="fixed bottom-0 left-1/2 w-full max-w-[560px] -translate-x-1/2 bg-bg px-5 pb-5 pt-4">
         <button
           type="submit"
           disabled={pending}

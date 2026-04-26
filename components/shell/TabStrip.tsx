@@ -13,7 +13,7 @@ const TABS = [
 export function TabStrip() {
   const pathname = usePathname();
   return (
-    <div className="flex items-center gap-7 border-b border-border px-5">
+    <div className="flex items-center gap-7 border-b border-border px-5 sm:px-8">
       {TABS.map((tab) => {
         const active = pathname === tab.href;
         return (

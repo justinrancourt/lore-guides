@@ -20,7 +20,7 @@ export function NavBar({
   return (
     <div
       className={cn(
-        "flex items-center justify-between border-b border-border px-5 py-3 z-20",
+        "z-20 flex items-center justify-between border-b border-border px-5 py-3 sm:px-8 sm:py-3.5",
         bg,
         sticky && "sticky top-0",
       )}

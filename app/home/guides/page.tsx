@@ -14,7 +14,7 @@ export default async function GuidesTab() {
 
   return (
     <AppShell>
-      <header className="px-5 pt-5">
+      <header className="px-5 sm:px-8 pt-5">
         <h1 className="m-0 font-serif text-title text-ink">Your guides</h1>
         <p className="m-0 mt-1 font-serif italic text-[13px] text-faint">
           {guides.length === 0
@@ -23,7 +23,7 @@ export default async function GuidesTab() {
         </p>
       </header>
 
-      <div className="mt-2 px-5">
+      <div className="mt-2 px-5 sm:px-8">
         {guides.length === 0 ? (
           <div className="flex flex-col items-center pt-10 pb-6 text-center">
             <Waymark size={24} color="#C0B8B0" />
