@@ -6,11 +6,11 @@ import { BEST_TIMES, PLACE_TYPES } from "@/lib/types";
 import type { BestTime, PlaceType } from "@/lib/types";
 import type { PlaceWithGuidesAndPhotos } from "@/lib/db/places";
 import { editPlace, deletePlace, type SavePlaceFormState } from "@/lib/actions/places";
-import { NavBar } from "@/components/primitives/NavBar";
 import { BorderlessInput } from "@/components/primitives/BorderlessInput";
 import { NoteTextarea } from "@/components/primitives/NoteTextarea";
 import { ChipSelect } from "@/components/primitives/ChipSelect";
 import { TimeSensitiveField } from "@/components/primitives/TimeSensitiveField";
+import { FormHeader } from "@/components/author/FormHeader";
 import { PhotoStripEditor } from "@/components/place/PhotoStripEditor";
 
 interface EditPlaceFormProps {
@@ -39,10 +39,9 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
   };
 
   return (
-    <div className="form-column">
+    <>
       <form action={action}>
-        <NavBar
-          sticky
+        <FormHeader
           left={
             <Link
               href={`/places/${place.id}`}
@@ -51,14 +50,7 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
               ✕ Cancel
             </Link>
           }
-          center={
-            <span
-              className="font-serif text-[10px] uppercase text-faint"
-              style={{ letterSpacing: "0.14em" }}
-            >
-              Edit place
-            </span>
-          }
+          title="Edit place"
           right={
             <button
               type="submit"
@@ -76,7 +68,7 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
         {bestTime && <input type="hidden" name="best_time" value={bestTime} />}
         {type && <input type="hidden" name="type" value={type} />}
 
-        <div className="flex flex-col gap-7 px-5 pb-16 pt-6">
+        <div className="mx-auto flex max-w-[560px] flex-col gap-7 px-5 pb-16 pt-6 sm:px-7">
           <Field label="Name">
             <BorderlessInput
               variant="name"
@@ -154,14 +146,16 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
         </div>
       </form>
 
-      <button
-        type="button"
-        onClick={handleDelete}
-        className="mx-5 mb-10 self-start border-0 bg-transparent p-0 font-serif text-[13px] text-faint underline underline-offset-4"
-      >
-        Delete this place
-      </button>
-    </div>
+      <div className="mx-auto max-w-[560px] px-5 pb-10 sm:px-7">
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="border-0 bg-transparent p-0 font-serif text-[13px] text-faint underline underline-offset-4"
+        >
+          Delete this place
+        </button>
+      </div>
+    </>
   );
 }
 

@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { NavBar } from "@/components/primitives/NavBar";
+import { AuthorShell } from "@/components/author/AuthorShell";
 import { AddPlaceFlow } from "./AddPlaceFlow";
 import { currentProfile } from "@/lib/auth";
 import { guideBySlug } from "@/lib/db/guides";
@@ -17,27 +16,13 @@ export default async function AddPlacePage({ params }: PageProps) {
   if (!guide || guide.author_id !== profile.id) notFound();
 
   return (
-    <div className="form-column">
-      <NavBar
-        sticky
-        left={
-          <Link
-            href={`/guides/${guide.slug}`}
-            className="font-serif text-[14px] text-faint"
-          >
-            ✕ Cancel
-          </Link>
-        }
-        center={
-          <span
-            className="font-serif text-[10px] uppercase text-faint"
-            style={{ letterSpacing: "0.14em" }}
-          >
-            Add to {guide.title}
-          </span>
-        }
+    <AuthorShell>
+      <AddPlaceFlow
+        guideId={guide.id}
+        guideSlug={guide.slug}
+        guideTitle={guide.title}
+        userId={profile.id}
       />
-      <AddPlaceFlow guideId={guide.id} userId={profile.id} />
-    </div>
+    </AuthorShell>
   );
 }

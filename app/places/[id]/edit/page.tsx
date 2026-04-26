@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { AuthorShell } from "@/components/author/AuthorShell";
 import { currentProfile } from "@/lib/auth";
 import { placeById } from "@/lib/db/places";
 import { EditPlaceForm } from "./EditPlaceForm";
@@ -13,5 +14,9 @@ export default async function EditPlacePage({ params }: PageProps) {
   if (!profile) return null;
   const place = await placeById(id);
   if (!place || place.created_by !== profile.id) notFound();
-  return <EditPlaceForm place={place} />;
+  return (
+    <AuthorShell>
+      <EditPlaceForm place={place} />
+    </AuthorShell>
+  );
 }

@@ -92,7 +92,9 @@ export function AuthorSidebar({
           </p>
         ) : (
           guides.map((g) => {
-            const active = pathname === `/guides/${g.slug}`;
+            const active =
+              pathname === `/guides/${g.slug}` ||
+              pathname.startsWith(`/guides/${g.slug}/`);
             return (
               <Link
                 key={g.id}

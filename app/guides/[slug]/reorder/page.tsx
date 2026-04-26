@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { NavBar } from "@/components/primitives/NavBar";
+import { AuthorShell } from "@/components/author/AuthorShell";
+import { FormHeader } from "@/components/author/FormHeader";
 import { ReorderClient } from "./ReorderClient";
 import { currentProfile } from "@/lib/auth";
 import { guideBySlug } from "@/lib/db/guides";
@@ -20,9 +21,8 @@ export default async function ReorderPage({ params }: PageProps) {
   const places = await listPlacesInGuide(guide.id);
 
   return (
-    <div className="form-column">
-      <NavBar
-        sticky
+    <AuthorShell>
+      <FormHeader
         left={
           <Link
             href={`/guides/${guide.slug}`}
@@ -31,20 +31,15 @@ export default async function ReorderPage({ params }: PageProps) {
             ← Done
           </Link>
         }
-        center={
-          <span
-            className="font-serif text-[10px] uppercase text-faint"
-            style={{ letterSpacing: "0.14em" }}
-          >
-            Reorder · {guide.title}
-          </span>
-        }
+        title={`Reorder · ${guide.title}`}
       />
-      <ReorderClient
-        guideId={guide.id}
-        guideSlug={guide.slug}
-        places={places}
-      />
-    </div>
+      <div className="mx-auto max-w-[560px]">
+        <ReorderClient
+          guideId={guide.id}
+          guideSlug={guide.slug}
+          places={places}
+        />
+      </div>
+    </AuthorShell>
   );
 }
