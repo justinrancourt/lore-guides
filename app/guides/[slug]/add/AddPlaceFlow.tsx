@@ -212,6 +212,12 @@ function AnnotateStep({
       {picked?.id && (
         <input type="hidden" name="google_place_id" value={picked.id} />
       )}
+      {picked?.lat != null && (
+        <input type="hidden" name="lat" value={String(picked.lat)} />
+      )}
+      {picked?.lng != null && (
+        <input type="hidden" name="lng" value={String(picked.lng)} />
+      )}
       {bestTime && <input type="hidden" name="best_time" value={bestTime} />}
       {type && <input type="hidden" name="type" value={type} />}
 

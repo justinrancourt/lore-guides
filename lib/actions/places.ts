@@ -45,6 +45,13 @@ function boolField(form: FormData, name: string): boolean {
   return form.get(name) === "on" || form.get(name) === "true";
 }
 
+function numericField(form: FormData, name: string): number | null {
+  const v = form.get(name);
+  if (typeof v !== "string" || v.length === 0) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
 // ─── Add a place to a guide ─────────────────────────────────────────────
 // Form supplies the place fields plus the guide_id to file under. We
 // create a fresh `places` row + a `guide_places` join row in one round
@@ -63,6 +70,9 @@ export async function addPlaceToGuide(
   if (!name) return { error: "A place needs a name." };
   if (!guideId) return { error: "Missing guide_id." };
 
+  const lat = numericField(form, "lat");
+  const lng = numericField(form, "lng");
+
   const insert: PlaceInsert = {
     created_by: profile.id,
     name,
@@ -73,6 +83,8 @@ export async function addPlaceToGuide(
     vibe: nullableStr(form, "vibe"),
     best_time: bestTimeField(form),
     type: typeField(form),
+    lat,
+    lng,
     time_sensitive: boolField(form, "time_sensitive_enabled")
       ? nullableStr(form, "time_sensitive")
       : null,

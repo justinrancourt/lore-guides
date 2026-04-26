@@ -21,6 +21,8 @@ interface SeedPlace {
   note: string;
   vibe: string;
   time_sensitive?: string;
+  lat: number;
+  lng: number;
 }
 
 const VALENCIA_PLACES: SeedPlace[] = [
@@ -32,6 +34,8 @@ const VALENCIA_PLACES: SeedPlace[] = [
     note: "Walk here before 9am when the beach is empty. Order the fresh orange juice and the tostada con tomate. Sit outside. Watch the Mediterranean do its thing.",
     vibe: "Golden hour breakfast",
     time_sensitive: "Best before 9am",
+    lat: 39.4811,
+    lng: -0.3294,
   },
   {
     name: "Jardín del Turia",
@@ -40,6 +44,8 @@ const VALENCIA_PLACES: SeedPlace[] = [
     type: "Do",
     note: "A river that became the most beautiful urban park in Europe. Rent a bike and ride the full 9km. You'll pass under medieval bridges, through orange groves.",
     vibe: "The soul of the city",
+    lat: 39.4769,
+    lng: -0.3631,
   },
   {
     name: "Horchatería Daniel",
@@ -48,6 +54,8 @@ const VALENCIA_PLACES: SeedPlace[] = [
     type: "Drink",
     note: "Take the tram to Alboraya. Order horchata and fartons. This is THE horchata — made from tiger nuts grown in the fields you can see from the window.",
     vibe: "A flavor you can't find at home",
+    lat: 39.4972,
+    lng: -0.3458,
   },
   {
     name: "Mercado Central",
@@ -56,6 +64,8 @@ const VALENCIA_PLACES: SeedPlace[] = [
     type: "See",
     note: "Go on a weekday. Don't eat breakfast first. Wander until something pulls you in. Buy a bag of clementines and eat them on the steps outside.",
     vibe: "Sensory overload in the best way",
+    lat: 39.4734,
+    lng: -0.3789,
   },
   {
     name: "Bodega Casa Montaña",
@@ -65,6 +75,8 @@ const VALENCIA_PLACES: SeedPlace[] = [
     note: "The oldest bar in Valencia, since 1836. The clóchinas are non-negotiable. So is the vermut on tap. Walk around El Cabanyal before dinner.",
     vibe: "The real thing",
     time_sensitive: "Opens at 7pm",
+    lat: 39.4658,
+    lng: -0.3261,
   },
   {
     name: "Café de las Horas",
@@ -74,6 +86,8 @@ const VALENCIA_PLACES: SeedPlace[] = [
     note: "Baroque, candlelit, a little dramatic. Order the Agua de Valencia. Go after 10pm when the neighborhood comes alive.",
     vibe: "Where the night begins",
     time_sensitive: "Best after 10pm",
+    lat: 39.4779,
+    lng: -0.3768,
   },
   {
     name: "Albufera Natural Park",
@@ -82,6 +96,8 @@ const VALENCIA_PLACES: SeedPlace[] = [
     type: "Do",
     note: "This is where paella was born. Take a boat through the wetlands at sunset, then eat arroz in one of the restaurants in El Palmar.",
     vibe: "Where paella comes from",
+    lat: 39.3306,
+    lng: -0.3500,
   },
 ];
 
