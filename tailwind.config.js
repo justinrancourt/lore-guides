@@ -77,7 +77,18 @@ module.exports = {
         fab: "0 6px 18px rgba(0, 0, 0, 0.25)",
       },
       transitionDuration: {
+        // Brand book §12.4 motion durations.
+        fast: "150ms",
+        normal: "250ms",
+        slow: "400ms",
+        // Existing — bottom-sheet open/close (kept for the capture sheet).
         sheet: "280ms",
+      },
+      transitionTimingFunction: {
+        // Brand book §12.4 named eases.
+        default: "cubic-bezier(0.4, 0, 0.2, 1)",
+        sine: "cubic-bezier(0.45, 0, 0.55, 1)",
+        spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
       },
       maxWidth: {
         intro: "300px",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RecipientNav } from "@/components/recipient/RecipientNav";
 import { RecipientLandingShell } from "@/components/recipient/RecipientLandingShell";
+import { RecipientSplash } from "@/components/recipient/RecipientSplash";
 import { currentProfile } from "@/lib/auth";
 import { publicGuideBySlug } from "@/lib/db/guides";
 import { listPlacesInGuide } from "@/lib/db/places";
@@ -70,6 +71,7 @@ export default async function RecipientGuidePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-bg">
+      <RecipientSplash />
       <RecipientNav slug={guide.slug} mode="landing" metadata={navMeta} />
       <RecipientLandingShell
         guide={guide}

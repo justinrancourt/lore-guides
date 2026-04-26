@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Lore Guides",
   description:
     "Save the places you love. Collect them into guides. Share with friends.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({
