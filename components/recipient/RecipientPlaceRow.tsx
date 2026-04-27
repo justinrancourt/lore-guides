@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { TimeSensitiveFlag } from "@/components/primitives/TimeSensitiveFlag";
 import { PhotoBlock } from "@/components/primitives/PhotoBlock";
@@ -50,10 +50,22 @@ export function RecipientPlaceRow({
 
   const handleExpand = () => onToggleActive?.(!isActive);
 
+  // When the parent flips this row to active (typically because a map
+  // pin was clicked), bring the row into view inside the scrollable
+  // left panel. block: "nearest" makes this a no-op when the row is
+  // already on screen — so clicking the row in the list doesn't cause
+  // a needless scroll jump.
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!isActive) return;
+    rowRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [isActive]);
+
   return (
     <div
+      ref={rowRef}
       className={cn(
-        "flex items-baseline gap-4 border-t border-border py-5 transition-colors",
+        "flex items-baseline gap-4 scroll-mt-4 border-t border-border py-5 transition-colors",
         isActive && "bg-accent-soft/20",
       )}
     >
