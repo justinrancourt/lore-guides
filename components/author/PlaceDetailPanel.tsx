@@ -12,7 +12,7 @@ interface PlaceDetailPanelProps {
 // + a single-pin map placeholder + an Edit shortcut. The center column
 // owns the actual content; this panel is contextual.
 export function PlaceDetailPanel({ place, filedIn }: PlaceDetailPanelProps) {
-  const pins: MapPin[] = [{ id: place.id, index: 1 }];
+  const pins: MapPin[] = [{ id: place.id, index: 1, lat: place.lat, lng: place.lng }];
 
   return (
     <div className="flex flex-col gap-6 px-6 py-7">

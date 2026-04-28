@@ -187,6 +187,9 @@ export async function editPlace(
   const name = strField(form, "name");
   if (!name) return { error: "A place needs a name." };
 
+  const lat = numericField(form, "lat");
+  const lng = numericField(form, "lng");
+
   const update: PlaceUpdate = {
     name,
     neighborhood: nullableStr(form, "neighborhood"),
@@ -195,6 +198,10 @@ export async function editPlace(
     vibe: nullableStr(form, "vibe"),
     best_time: bestTimeField(form),
     type: typeField(form),
+    // Coords flow in as hidden inputs from AddressAutocompleteField when
+    // the user picks a Google suggestion. If absent, we leave the row's
+    // existing lat/lng untouched.
+    ...(lat != null && lng != null ? { lat, lng } : {}),
     time_sensitive: boolField(form, "time_sensitive_enabled")
       ? nullableStr(form, "time_sensitive")
       : null,

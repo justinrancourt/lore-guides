@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { PlaceWithGuides } from "@/lib/db/places";
-import { placeholderColor, relativeDate } from "@/lib/format";
+import { relativeDate } from "@/lib/format";
+import { PlaceCoverThumbnail } from "@/components/place/PlaceCoverThumbnail";
 
 interface CompactPlaceRowProps {
   place: PlaceWithGuides;
@@ -17,20 +18,19 @@ export function CompactPlaceRow({ place }: CompactPlaceRowProps) {
       href={`/places/${place.id}`}
       className="flex items-start gap-3.5 border-b border-border-soft py-4 transition-colors hover:bg-surface/40"
     >
-      <div
-        className="h-12 w-12 shrink-0 overflow-hidden bg-surface"
-        style={{ backgroundColor: placeholderColor(place.id) }}
-      >
-        {place.cover_url && (
-          // eslint-disable-next-line @next/next/no-img-element
+      {place.cover_url ? (
+        <div className="h-12 w-12 shrink-0 overflow-hidden bg-surface">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={place.cover_url}
             alt=""
             className="h-full w-full object-cover"
             style={{ filter: "saturate(0.85)" }}
           />
-        )}
-      </div>
+        </div>
+      ) : (
+        <PlaceCoverThumbnail name={place.name} size={48} />
+      )}
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-3">
           <h3 className="m-0 font-serif text-[15px] font-normal text-ink">

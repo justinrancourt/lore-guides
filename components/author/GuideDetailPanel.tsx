@@ -20,7 +20,7 @@ export async function GuideDetailPanel({ guide, places }: GuideDetailPanelProps)
 
   const pins: MapPin[] = places
     .slice(0, 12)
-    .map((p, i) => ({ id: p.id, index: i + 1 }));
+    .map((p, i) => ({ id: p.id, index: i + 1, lat: p.lat, lng: p.lng }));
 
   const categoryCounts = new Map<string, number>();
   for (const p of places) {

@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { Icon, IconPath } from "@/components/primitives/Icon";
 import { TimeSensitiveFlag } from "@/components/primitives/TimeSensitiveFlag";
 import { PhotoBlock } from "@/components/primitives/PhotoBlock";
+import { PlaceCoverCard } from "@/components/place/PlaceCoverCard";
 import { placeholderColor } from "@/lib/format";
 import type { PlaceWithGuidesAndPhotos } from "@/lib/db/places";
 import {
@@ -16,6 +17,8 @@ import { MapPanel, type MapPin } from "./MapPanel";
 interface RecipientPlaceDetailProps {
   guideSlug: string;
   guideTitle: string;
+  guideCity: string | null;
+  guideCountry: string | null;
   authorName: string;
   place: PlaceWithGuidesAndPhotos;
   siblings: PlaceWithGuidesAndPhotos[];
@@ -29,6 +32,8 @@ interface RecipientPlaceDetailProps {
 export function RecipientPlaceDetail({
   guideSlug,
   guideTitle,
+  guideCity,
+  guideCountry,
   authorName,
   place,
   siblings,
@@ -44,9 +49,9 @@ export function RecipientPlaceDetail({
   const saved = state.saved ?? initiallySaved;
   const cover = place.photos[0];
 
-  // The mini-map renders just this one pin so the recipient can orient
-  // the place even before Mapbox lands.
-  const pins: MapPin[] = [{ id: place.id, index }];
+  const pins: MapPin[] = [
+    { id: place.id, index, lat: place.lat, lng: place.lng },
+  ];
 
   const mapsUrl = place.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -132,15 +137,23 @@ export function RecipientPlaceDetail({
         </p>
       )}
 
-      {cover && (
-        <div className="mt-6">
+      <div className="mt-6">
+        {cover ? (
           <PhotoBlock
             src={cover.url}
             color={placeholderColor(place.id)}
             caption={cover.caption ?? undefined}
           />
-        </div>
-      )}
+        ) : (
+          <PlaceCoverCard
+            name={place.name}
+            neighborhood={place.neighborhood}
+            city={guideCity}
+            country={guideCountry}
+            position={index}
+          />
+        )}
+      </div>
 
       {place.note && (
         <p className="m-0 mt-5 font-serif text-[15px] leading-[1.85] text-ink-muted sm:text-[16px]">

@@ -4,6 +4,7 @@ import { AuthorShell } from "@/components/author/AuthorShell";
 import { PlaceDetailPanel } from "@/components/author/PlaceDetailPanel";
 import { TimeSensitiveFlag } from "@/components/primitives/TimeSensitiveFlag";
 import { PhotoBlock } from "@/components/primitives/PhotoBlock";
+import { PlaceCoverCard } from "@/components/place/PlaceCoverCard";
 import { currentProfile } from "@/lib/auth";
 import { listGuidesForUser } from "@/lib/db/guides";
 import { placeById } from "@/lib/db/places";
@@ -68,12 +69,23 @@ export default async function PlaceDetailPage({ params }: PageProps) {
             {place.vibe}
           </p>
         )}
-        {cover && (
+        {cover ? (
           <PhotoBlock
             src={cover.url}
             color={placeholderColor(place.id)}
             caption={cover.caption ?? undefined}
           />
+        ) : (
+          // Standalone view — pull city/country from the first guide
+          // this place is filed in. No guide context = no N° position.
+          <div className="my-4">
+            <PlaceCoverCard
+              name={place.name}
+              neighborhood={place.neighborhood}
+              city={filedIn[0]?.city ?? null}
+              country={filedIn[0]?.country ?? null}
+            />
+          </div>
         )}
         {place.note ? (
           <div className="mt-2">

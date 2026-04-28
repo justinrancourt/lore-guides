@@ -56,6 +56,8 @@ export default async function RecipientPlacePage({ params }: PageProps) {
       <RecipientPlaceDetail
         guideSlug={guide.slug}
         guideTitle={guide.title}
+        guideCity={guide.city}
+        guideCountry={guide.country}
         authorName={guide.author_name}
         place={result.place}
         siblings={result.siblings}

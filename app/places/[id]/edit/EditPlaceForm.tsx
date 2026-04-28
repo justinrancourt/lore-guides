@@ -12,6 +12,7 @@ import { ChipSelect } from "@/components/primitives/ChipSelect";
 import { TimeSensitiveField } from "@/components/primitives/TimeSensitiveField";
 import { FormHeader } from "@/components/author/FormHeader";
 import { PhotoStripEditor } from "@/components/place/PhotoStripEditor";
+import { AddressAutocompleteField } from "@/components/place/AddressAutocompleteField";
 
 interface EditPlaceFormProps {
   place: PlaceWithGuidesAndPhotos;
@@ -24,6 +25,10 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
   const [type, setType] = useState<PlaceType | null>(
     (place.type as PlaceType | null) ?? null,
   );
+  // Name is controlled so the address autocomplete can use it as the
+  // query prefix — typing in the address field searches Google for
+  // "<current name> <typed address>".
+  const [name, setName] = useState(place.name);
 
   const boundEdit = editPlace.bind(null, place.id);
   const [state, action, pending] = useActionState<SavePlaceFormState, FormData>(
@@ -73,7 +78,8 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
             <BorderlessInput
               variant="name"
               name="name"
-              defaultValue={place.name}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </Field>
@@ -86,9 +92,11 @@ export function EditPlaceForm({ place }: EditPlaceFormProps) {
           </Field>
 
           <Field label="Address">
-            <BorderlessInput
-              name="address"
-              defaultValue={place.address ?? ""}
+            <AddressAutocompleteField
+              prefix={name}
+              defaultAddress={place.address}
+              defaultLat={place.lat}
+              defaultLng={place.lng}
             />
           </Field>
 

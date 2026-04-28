@@ -16,11 +16,16 @@ export function AllPlacesPanel({ places, guides }: AllPlacesPanelProps) {
   const withPhotos = places.filter((p) => p.cover_url !== null).length;
   const needsNotes = total - withNotes;
 
-  // For the map placeholder we just enumerate places as numbered pins.
-  // Once Mapbox lands these get color-coded by guide.
+  // Numbered pins on the overview map. Cap at 20 so a user with 100+
+  // saved places doesn't drown the right panel.
   const pins: MapPin[] = places
     .slice(0, 20)
-    .map((p, i) => ({ id: p.id, index: i + 1 }));
+    .map((p, i) => ({
+      id: p.id,
+      index: i + 1,
+      lat: p.lat,
+      lng: p.lng,
+    }));
 
   // By-guide counts (only counts guides that have at least one place).
   const guideCounts = guides
